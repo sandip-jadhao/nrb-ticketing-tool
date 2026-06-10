@@ -1,0 +1,19 @@
+# Java
+target/
+*.class
+*.jar
+
+# IntelliJ
+.idea/
+*.iml
+
+# React
+node_modules/
+build/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
