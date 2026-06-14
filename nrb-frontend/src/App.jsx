@@ -1,5 +1,7 @@
-export default function App() {
-  return <div>
-    <h1>NRB Ticketing Tool</h1>
-  </div>
+import Login from "./pages/auth/Login";
+
+function App() {
+  return <Login />;
 }
+
+export default App;
