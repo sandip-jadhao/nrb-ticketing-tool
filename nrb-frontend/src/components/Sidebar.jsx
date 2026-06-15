@@ -1,14 +1,23 @@
 import {
   FaHome,
-  FaTicketAlt,
   FaUsers,
   FaUserCog,
+  FaTicketAlt,
+  FaUser,
   FaSignOutAlt
 } from "react-icons/fa";
 
+import { Link } from "react-router-dom";
+
 function Sidebar() {
+
+  const logout = () => {
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="w-64 min-h-screen bg-[#002855] text-white">
+    <div className="w-64 bg-[#002855] text-white">
 
       <div className="p-6 border-b border-blue-900">
 
@@ -16,40 +25,66 @@ function Sidebar() {
           NRB Support
         </h1>
 
-        <p className="text-sm text-gray-300">
-          Ticketing System
+        <p className="text-gray-300 text-sm">
+          Admin Portal
         </p>
 
       </div>
 
-      <nav className="p-4 space-y-2">
+      <div className="p-4 space-y-2">
 
-        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-[#003B7A]">
+        <Link
+          to="/admin/dashboard"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+        >
           <FaHome />
           Dashboard
-        </button>
+        </Link>
 
-        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-[#003B7A]">
-          <FaTicketAlt />
-          Tickets
-        </button>
-
-        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-[#003B7A]">
+        <Link
+          to="/admin/users"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+        >
           <FaUsers />
           Users
-        </button>
+        </Link>
 
-        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-[#003B7A]">
+        <Link
+          to="/admin/engineers"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+        >
           <FaUserCog />
           Engineers
+        </Link>
+
+        <Link
+          to="/admin/tickets"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+        >
+          <FaTicketAlt />
+          Tickets
+        </Link>
+
+        <Link
+          to="/admin/profile"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+        >
+          <FaUser />
+          Profile
+        </Link>
+
+        <button
+          onClick={logout}
+          className="w-full mt-8 p-3 bg-red-600 rounded hover:bg-red-700"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <FaSignOutAlt />
+            Logout
+          </div>
         </button>
 
-        <button className="flex items-center gap-3 w-full p-3 rounded-lg hover:bg-red-600 mt-10">
-          <FaSignOutAlt />
-          Logout
-        </button>
+      </div>
 
-      </nav>
     </div>
   );
 }
