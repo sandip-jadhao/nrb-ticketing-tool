@@ -1,7 +1,7 @@
 package com.nibl.ticketing.controller;
 
 import com.nibl.ticketing.dto.LoginRequest;
-import com.nibl.ticketing.dto.RegisterRequest;
+import com.nibl.ticketing.dto.LoginResponse;import com.nibl.ticketing.dto.RegisterRequest;
 import com.nibl.ticketing.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +22,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(
+    public LoginResponse login(
             @RequestBody LoginRequest request) {
 
-        return ResponseEntity.ok(
-                authService.login(request));
+        return authService.login(request);
     }
 }
