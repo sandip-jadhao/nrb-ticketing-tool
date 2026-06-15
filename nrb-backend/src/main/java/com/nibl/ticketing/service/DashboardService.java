@@ -1,4 +1,8 @@
-package com.nibl.ticketing.service.impl;
+package com.nibl.ticketing.service;
 
-public class DashboardService {
+import com.nibl.ticketing.dto.DashboardResponse;
+
+public interface DashboardService {
+
+    DashboardResponse getDashboardData();
 }
