@@ -1,36 +1,48 @@
-import AdminLayout from "../../layouts/AdminLayout";
-import DashboardCard from "../../components/DashboardCard";
+import { useEffect, useState } from "react";
+import { getDashboardData } from "../../services/dashboardService";
 
 function Dashboard() {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalEngineers: 0,
+    openTickets: 0,
+    resolvedTickets: 0,
+  });
+  
+ const loadDashboard = async () => {
+    try {
+      const data = await getDashboardData();
+      setStats(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
   return (
-    <AdminLayout>
-
-      <div className="grid grid-cols-4 gap-6">
-
-        <DashboardCard
-          title="Total Users"
-          count="10"
-        />
-
-        <DashboardCard
-          title="Engineers"
-          count="4"
-        />
-
-        <DashboardCard
-          title="Open Tickets"
-          count="12"
-        />
-
-        <DashboardCard
-          title="Resolved"
-          count="8"
-        />
-
+    <div className="grid grid-cols-4 gap-6">
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3>Total Users</h3>
+        <p className="text-3xl font-bold">{stats.totalUsers}</p>
       </div>
 
-    </AdminLayout>
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3>Total Engineers</h3>
+        <p className="text-3xl font-bold">{stats.totalEngineers}</p>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3>Open Tickets</h3>
+        <p className="text-3xl font-bold">{stats.openTickets}</p>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3>Resolved Tickets</h3>
+        <p className="text-3xl font-bold">{stats.resolvedTickets}</p>
+      </div>
+    </div>
   );
 }
 

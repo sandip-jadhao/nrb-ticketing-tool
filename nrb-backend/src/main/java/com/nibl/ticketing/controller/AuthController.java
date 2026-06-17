@@ -1,7 +1,8 @@
 package com.nibl.ticketing.controller;
 
 import com.nibl.ticketing.dto.LoginRequest;
-import com.nibl.ticketing.dto.LoginResponse;import com.nibl.ticketing.dto.RegisterRequest;
+import com.nibl.ticketing.dto.LoginResponse;
+import com.nibl.ticketing.dto.RegisterRequest;
 import com.nibl.ticketing.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
