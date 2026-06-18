@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { getDashboardData } from "../../services/dashboardService";
+import AdminLayout from "../../layouts/AdminLayout";
+import DashboardCard from "../../components/DashboardCard";
+import { getDashboardData } from "../../services/adminService";
 
 function Dashboard() {
   const [stats, setStats] = useState({
@@ -8,41 +10,53 @@ function Dashboard() {
     openTickets: 0,
     resolvedTickets: 0,
   });
-  
- const loadDashboard = async () => {
-    try {
-      const data = await getDashboardData();
-      setStats(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+
   useEffect(() => {
     loadDashboard();
   }, []);
 
+  const loadDashboard = async () => {
+  try {
+    const data = await getDashboardData();
+
+    console.log("Dashboard Data:", data);
+
+    setStats(data);
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
+  }
+};  
+
   return (
-    <div className="grid grid-cols-4 gap-6">
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3>Total Users</h3>
-        <p className="text-3xl font-bold">{stats.totalUsers}</p>
-      </div>
+    <AdminLayout>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          Admin Dashboard
+        </h1>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3>Total Engineers</h3>
-        <p className="text-3xl font-bold">{stats.totalEngineers}</p>
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <DashboardCard
+            title="Total Users"
+            count={stats.totalUsers}
+          />
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3>Open Tickets</h3>
-        <p className="text-3xl font-bold">{stats.openTickets}</p>
-      </div>
+          <DashboardCard
+            title="Engineers"
+            count={stats.totalEngineers}
+          />
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3>Resolved Tickets</h3>
-        <p className="text-3xl font-bold">{stats.resolvedTickets}</p>
+          <DashboardCard
+            title="Open Tickets"
+            count={stats.openTickets}
+          />
+
+          <DashboardCard
+            title="Resolved Tickets"
+            count={stats.resolvedTickets}
+          />
+        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

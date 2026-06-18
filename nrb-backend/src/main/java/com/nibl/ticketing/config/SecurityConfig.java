@@ -2,7 +2,8 @@ package com.nibl.ticketing.config;
 
 import com.nibl.ticketing.security.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.
         AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.
@@ -20,6 +21,9 @@ import org.springframework.security.web.
         SecurityFilterChain;
 import org.springframework.security.web.authentication.
         UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
@@ -34,6 +38,7 @@ public class SecurityConfig {
             throws Exception {
 
         http
+                .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
@@ -67,6 +72,33 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public CorsConfigurationSource
+    corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowCredentials(true);
+
+        configuration.addAllowedOrigin(
+                "http://localhost:5173");
+
+        configuration.addAllowedHeader("*");
+
+        configuration.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration);
+
+        return source;
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
