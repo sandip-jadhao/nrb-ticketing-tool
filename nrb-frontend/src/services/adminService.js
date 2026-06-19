@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API =
-  "http://localhost:8080/api/admin";
+const API = "http://localhost:8080/api/admin";
 
 // helper to get auth headers (reads token fresh from localStorage)
 const getHeaders = () => ({
@@ -25,18 +24,10 @@ export const deleteUser = (id) => {
   return axios.delete(`${API}/users/${id}`, getHeaders());
 };
 
-export const getEngineers = () => {
-  return axios.get(`${API}/engineers`, getHeaders());
-};
-
-export const createEngineer = (engineer) => {
-  return axios.post(`${API}/engineers`, engineer, getHeaders());
-};
-
-export const deleteEngineer = (id) => {
-  return axios.delete(`${API}/engineers/${id}`, getHeaders());
-};
-
 export const getTickets = () => {
-  return axios.get(`${API}/tickets`, getHeaders());
+  return axios.get(`http://localhost:8080/api/tickets`, getHeaders());
+};
+
+export const deleteTicket = (id) => {
+  return axios.delete(`http://localhost:8080/api/tickets/${id}`, getHeaders());
 };

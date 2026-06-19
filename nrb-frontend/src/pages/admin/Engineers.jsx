@@ -1,6 +1,6 @@
 import { useEffect,useState} from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import {getEngineers,deleteEngineer}from "../../services/adminService";
+import {getEngineers,deleteEngineer}from "../../services/engineerService";
 function Engineers() {
 
   const [engineers,
@@ -13,30 +13,20 @@ function Engineers() {
 
   const loadEngineers =
     async () => {
-
-      try {
-
-        const response =
-          await getEngineers();
-
-        setEngineers(
-          response.data
-        );
-
-      } catch (error) {
+    try {
+            const response = await getEngineers();
+            setEngineers(response.data);
+            
+    } catch (error) {
         console.log(error);
       }
     };
 
   const handleDelete =
     async (id) => {
-
       try {
-
         await deleteEngineer(id);
-
         loadEngineers();
-
       } catch (error) {
         console.log(error);
       }
@@ -44,35 +34,10 @@ function Engineers() {
 
   return (
     <AdminLayout>
-
       <div>
-
-        <div
-          className="
-          flex
-          justify-between
-          mb-6
-        "
-        >
-          <h1
-            className="
-            text-3xl
-            font-bold
-          "
-          >
-            Engineers
-          </h1>
-
-          <button
-            className="
-            bg-blue-600
-            text-white
-            px-4
-            py-2
-            rounded
-            hover:bg-blue-700
-          "
-          >
+        <div className="flex justify-between mb-6">
+          <h1 className="text-3xl font-bold">Engineers</h1>
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             Create Engineer
           </button>
         </div>
@@ -97,11 +62,6 @@ function Engineers() {
                 <th className="p-4 text-left">
                   ID
                 </th>
-
-                <th className="p-4 text-left">
-                  Employee Code
-                </th>
-
                 <th className="p-4 text-left">
                   Name
                 </th>
@@ -111,11 +71,7 @@ function Engineers() {
                 </th>
 
                 <th className="p-4 text-left">
-                  Skill Set
-                </th>
-
-                <th className="p-4 text-left">
-                  Experience
+                  Mobile
                 </th>
 
                 <th className="p-4 text-center">
@@ -128,10 +84,10 @@ function Engineers() {
             <tbody>
 
               {engineers.map(
-                (engineer) => (
+                (engineer,index) => (
 
                 <tr
-                  key={engineer.id}
+                  key={index + 1}
                   className="
                   border-t
                   hover:bg-gray-50
@@ -139,11 +95,7 @@ function Engineers() {
                 >
 
                   <td className="p-4">
-                    {engineer.id}
-                  </td>
-
-                  <td className="p-4">
-                    {engineer.employeeCode}
+                    {index + 1}
                   </td>
 
                   <td className="p-4">
@@ -157,13 +109,7 @@ function Engineers() {
                   </td>
 
                   <td className="p-4">
-                    {engineer.skillSet}
-                  </td>
-
-                  <td className="p-4">
-                    {engineer.experienceYears}
-                    {" "}
-                    Years
+                    {engineer.user?.mobileNo}
                   </td>
 
                   <td
@@ -175,7 +121,7 @@ function Engineers() {
                     <button
                       onClick={() =>
                         handleDelete(
-                          engineer.id
+                          engineer.user?.id
                         )
                       }
                       className="

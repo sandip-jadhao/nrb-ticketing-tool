@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import {
-  getUsers,
-  deleteUser
-} from "../../services/adminService";
+import {getUsers,deleteUser} from "../../services/adminService";
+
 
 function Users() {
   const [users, setUsers] = useState([]);
@@ -13,13 +11,17 @@ function Users() {
   }, []);
 
   const loadUsers = async () => {
-    try {
-      const response = await getUsers();
-      setUsers(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  try {
+    const response = await getUsers();
+    const onlyUsers =
+      response.data.filter(
+        (user) => user.role === "USER"
+      );
+    setUsers(onlyUsers);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const handleDelete = async (id) => {
     try {
@@ -89,17 +91,17 @@ function Users() {
 
             <tbody>
 
-              {users.map((user) => (
+              {users.map((user,index) => (
 
                 <tr
-                  key={user.id}
+                  key={index+1}
                   className="
                     border-t
                     hover:bg-gray-50
                   "
                 >
                   <td className="p-4">
-                    {user.id}
+                    {index+1}
                   </td>
 
                   <td className="p-4">
