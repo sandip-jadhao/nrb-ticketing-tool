@@ -69,4 +69,8 @@ public class TicketServiceImpl implements TicketService {
 
         return ticketRepository.findByCreatedById(userId);
     }
+    @Override
+    public void deleteTicket(Long id) {
+        ticketRepository.deleteById(id);
+    }
 }

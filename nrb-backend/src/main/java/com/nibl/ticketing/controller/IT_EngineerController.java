@@ -11,13 +11,11 @@ import java.util.List;
 @RequestMapping("/api/engineers")
 @RequiredArgsConstructor
 public class IT_EngineerController {
-
     private final EngineerService engineerService;
 
     @PostMapping
     public Engineer createEngineer(
             @RequestBody Engineer engineer) {
-
         return engineerService.createEngineer(engineer);
     }
 
@@ -29,7 +27,6 @@ public class IT_EngineerController {
     @GetMapping("/{id}")
     public Engineer getEngineer(
             @PathVariable Long id) {
-
         return engineerService.getEngineer(id);
     }
 
@@ -37,14 +34,12 @@ public class IT_EngineerController {
     public Engineer updateEngineer(
             @PathVariable Long id,
             @RequestBody Engineer engineer) {
-
         return engineerService.updateEngineer(id, engineer);
     }
 
     @DeleteMapping("/{id}")
     public void deleteEngineer(
             @PathVariable Long id) {
-
         engineerService.deleteEngineer(id);
     }
 }
