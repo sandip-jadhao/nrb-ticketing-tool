@@ -17,6 +17,8 @@ public class AdminController {
     @PostMapping("/users")
     public User createUser(
             @RequestBody User user) {
+        System.out.println("========== ADMIN CONTROLLER HIT ==========");
+        System.out.println(user.getEmail());
 
         return userService.createUser(user);
     }

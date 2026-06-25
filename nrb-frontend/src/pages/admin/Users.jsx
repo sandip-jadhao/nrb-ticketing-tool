@@ -39,10 +39,12 @@ function Users() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-
+      console.log("FORM SUBMITTED");
     try {
-      await createUser(newUser);
-
+      console.log("BEFORE API CALL");
+     const response= await createUser(newUser);
+      console.log("AFTER API CALL");
+      console.log(response);
       loadUsers();
 
       setShowForm(false);
@@ -60,7 +62,9 @@ function Users() {
 
       alert("User Created Successfully");
     } catch (error) {
-      console.log(error);
+    console.log("API ERROR");
+    console.log(error);
+    console.log(error.response);
     }
   };
   
