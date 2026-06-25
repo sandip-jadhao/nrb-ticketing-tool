@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import {
-  getUsers,
-  deleteUser,
-  createUser,
-} from "../../services/adminService";
+import {getUsers,deleteUser,createUser,} from "../../services/adminService";
 
 function Engineers() {
   const [users, setUsers] = useState([]);
