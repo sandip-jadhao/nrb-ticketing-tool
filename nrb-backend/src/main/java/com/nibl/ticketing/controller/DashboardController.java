@@ -1,7 +1,6 @@
 package com.nibl.ticketing.controller;
 
 import com.nibl.ticketing.dto.DashboardResponse;
-import com.nibl.ticketing.dto.UserDashboardResponse;
 import com.nibl.ticketing.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
