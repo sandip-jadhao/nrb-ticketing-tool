@@ -1,4 +1,4 @@
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/AdminSidebar";
 import Navbar from "../components/Navbar";
 
 function AdminLayout({ children }) {

@@ -4,6 +4,8 @@ import com.nibl.ticketing.enums.TicketStatus;
 import com.nibl.ticketing.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.repository.TicketRepository;
 import com.nibl.ticketing.repository.UserRepository;
@@ -20,7 +22,11 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public Ticket createTicket(Ticket ticket) {
 
+        User loggedInUser = getLoggedInUser();
+
+        ticket.setCreatedBy(loggedInUser);
         ticket.setStatus(TicketStatus.OPEN);
+        ticket.setAssignedEngineer(null);
 
         return ticketRepository.save(ticket);
     }
@@ -72,5 +78,23 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void deleteTicket(Long id) {
         ticketRepository.deleteById(id);
+    }
+    private User getLoggedInUser() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+    }
+    @Override
+    public List<Ticket> getMyTickets() {
+
+        User user = getLoggedInUser();
+
+        return ticketRepository.findByCreatedById(user.getId());
     }
 }

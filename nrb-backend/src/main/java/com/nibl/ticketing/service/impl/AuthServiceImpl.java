@@ -58,7 +58,10 @@ public class AuthServiceImpl implements AuthService {
 
         return new LoginResponse(
                 token,
-                user.getRole().name()
+                user.getRole().name(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail()
         );
     }
 }

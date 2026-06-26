@@ -1,7 +1,9 @@
 package com.nibl.ticketing.controller;
 
+import com.nibl.ticketing.dto.UserDashboardResponse;
 import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.entity.User;
+import com.nibl.ticketing.service.DashboardService;
 import com.nibl.ticketing.service.TicketService;
 import com.nibl.ticketing.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ public class UserController {
 
     private final UserService userService;
     private final TicketService ticketService;
+    private final DashboardService dashboardService ;
 
     /**
      * Get User Profile
@@ -60,5 +63,10 @@ public class UserController {
 
         return ResponseEntity.ok(
                 ticketService.getTicketsByUser(userId));
+    }
+
+    @GetMapping("/dashboard")
+    public UserDashboardResponse getDashboard() {
+        return dashboardService.getUserDashboard();
     }
 }

@@ -21,16 +21,16 @@ function Login() {
     try {
         setLoading(true);
         setError("");
-      const response = await login({
-        email,
-        password
-      });
+      const response = await login({email,password});
 
       const token = response.data.token;
       const role = response.data.role;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
+      localStorage.setItem("firstName", response.data.firstName);
+      localStorage.setItem("lastName", response.data.lastName);
+      localStorage.setItem("email", response.data.email);
 
       if (role === "ADMIN") {
         navigate("/admin/dashboard");
@@ -39,12 +39,10 @@ function Login() {
       } else {
         navigate("/user/dashboard");
       }
-
     } catch (error) {
       console.error(error);
       alert("Invalid Email or Password");
     }finally {
-
       setLoading(false);
     }
   };

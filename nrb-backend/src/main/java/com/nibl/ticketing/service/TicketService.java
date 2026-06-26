@@ -8,15 +8,15 @@ public interface TicketService {
 
     Ticket createTicket(Ticket ticket);
 
-    Ticket assignTicket(
-            Long ticketId,
-            Long engineerId);
+    Ticket assignTicket(Long ticketId, Long engineerId);
 
-    Ticket updateStatus(
-            Long ticketId,
-            TicketStatus status);
+    Ticket updateStatus(Long ticketId, TicketStatus status);
 
     List<Ticket> getAllTickets();
+
     List<Ticket> getTicketsByUser(Long userId);
+
     void deleteTicket(Long id);
+
+    List<Ticket> getMyTickets();
 }

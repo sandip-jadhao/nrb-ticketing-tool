@@ -22,6 +22,11 @@ public class TicketController {
         return ticketService.createTicket(ticket);
     }
 
+    @GetMapping("/my")
+    public List<Ticket> getMyTickets() {
+        return ticketService.getMyTickets();
+    }
+
     @GetMapping
     public List<Ticket> getAllTickets() {
 
