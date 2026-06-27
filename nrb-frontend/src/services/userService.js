@@ -9,9 +9,11 @@ const getHeaders = () => ({
 });
 
 export const getUserDashboard = async () => {
-  const response = await axios.get(
-    `${API}/dashboard`,
-    getHeaders()
-  );
+  const response = await axios.get( `${API}/dashboard`, getHeaders() );
+  return response.data;
+};
+
+export const getUserProfile = async () => {
+  const response = await axios.get(`${API}/profile`, getHeaders());
   return response.data;
 };

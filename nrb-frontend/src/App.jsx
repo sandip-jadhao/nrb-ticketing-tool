@@ -10,7 +10,7 @@ import EngineerDashboard from "./pages/engineer/Dashboard";
 
 import UserDashboard from "./pages/user/UserDashboard";
 import CreateTicket from "./pages/user/CreateTicket";
-import Profile from "./pages/user/Profile";
+import UserProfile from "./pages/user/UserProfile";
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
 
         <Route path="/user/dashboard" element={<UserDashboard />} />
         <Route path="/user/create-ticket" element={<CreateTicket />} />
-        <Route path="/user/profile" element={<Profile />} /> 
+        <Route path="/user/profile" element={<UserProfile />} /> 
       </Routes>
     </BrowserRouter>
   );

@@ -26,7 +26,6 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(
             @PathVariable Long id) {
-
         return ResponseEntity.ok(
                 userService.getUser(id));
     }
@@ -68,5 +67,10 @@ public class UserController {
     @GetMapping("/dashboard")
     public UserDashboardResponse getDashboard() {
         return dashboardService.getUserDashboard();
+    }
+
+    @GetMapping("/profile")
+    public User getProfile() {
+        return userService.getLoggedInUser();
     }
 }

@@ -62,9 +62,7 @@ function Users() {
 
       alert("User Created Successfully");
     } catch (error) {
-    console.log("API ERROR");
     console.log(error);
-    console.log(error.response);
     }
   };
   
