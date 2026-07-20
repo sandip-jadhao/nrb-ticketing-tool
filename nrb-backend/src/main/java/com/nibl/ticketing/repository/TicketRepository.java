@@ -14,5 +14,6 @@ public interface TicketRepository
         long countByCreatedById(Long userId);
         long countByCreatedByIdAndStatus(Long userId, TicketStatus status);
         long countByCreatedByIdAndStatusIn(Long userId, List<TicketStatus> statuses);
-
+        long countByStatusIn(List<TicketStatus> statuses);
+        List<Ticket> findByAssignedEngineerId(Long engineerId);
     }

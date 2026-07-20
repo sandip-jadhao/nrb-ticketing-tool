@@ -19,4 +19,6 @@ public interface TicketService {
     void deleteTicket(Long id);
 
     List<Ticket> getMyTickets();
+
+    List<Ticket> getAssignedTickets();
 }
