@@ -48,14 +48,17 @@ public class TicketController {
     public Ticket updateStatus(
             @PathVariable Long id,
             @RequestParam TicketStatus status) {
-
-        return ticketService.updateStatus(
-                id,
-                status);
+        return ticketService.updateStatus(id, status);
     }
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteTicket(@PathVariable Long id) {
         ticketService.deleteTicket(id);
+    }
+
+    @GetMapping("/assigned")
+    @PreAuthorize("hasRole('IT_ENGINEER')")
+    public List<Ticket> getAssignedTickets() {
+        return ticketService.getAssignedTickets();
     }
 }

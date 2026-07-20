@@ -4,6 +4,7 @@ import com.nibl.ticketing.entity.User;
 import com.nibl.ticketing.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository
@@ -11,4 +12,5 @@ public interface UserRepository
 
     Optional<User> findByEmail(String email);
     long countByRole(Role role);
+    List<User> findByRole(Role role);
 }

@@ -22,7 +22,6 @@ function UserProfile() {
     try {
       const response = await getUserProfile();
       setUser(response);
-      console.log("Profile:", response);
     } catch (error) {
       console.log(error);
     }
@@ -45,9 +44,6 @@ function UserProfile() {
                 {user.firstName} {user.lastName}
               </h2>
 
-              <p className="text-gray-500">
-                {user.role}
-              </p>
             </div>
 
           </div>
@@ -95,14 +91,6 @@ function UserProfile() {
                 {user.designation}
               </p>
             </div>
-
-            <div>
-              <p className="text-gray-500">Role</p>
-              <p className="font-semibold">
-                {user.role}
-              </p>
-            </div>
-
           </div>
 
         </div>

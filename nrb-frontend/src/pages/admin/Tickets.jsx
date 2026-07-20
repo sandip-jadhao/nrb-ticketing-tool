@@ -45,7 +45,7 @@ function Tickets() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-4 text-left">
-                  ID
+                  SR No
                 </th>
 
                 <th className="p-4 text-left">
@@ -77,7 +77,7 @@ function Tickets() {
 
             <tbody>
 
-              {tickets.map((ticket) => (
+              {tickets.map((ticket,index) => (
 
                 <tr
                   key={ticket.id}
@@ -88,7 +88,7 @@ function Tickets() {
                 >
 
                   <td className="p-4">
-                    {ticket.id}
+                    {index+1}
                   </td>
 
                   <td className="p-4">

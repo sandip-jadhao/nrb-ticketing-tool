@@ -34,12 +34,21 @@ public class DashboardServiceImpl implements DashboardService {
                         Role.IT_ENGINEER);
 
         long openTickets =
-                ticketRepository.countByStatus(
-                        TicketStatus.OPEN);
+                ticketRepository.countByStatusIn(
+                        List.of(
+                                TicketStatus.OPEN,
+                                TicketStatus.ASSIGNED,
+                                TicketStatus.IN_PROGRESS
+                        )
+                );
 
         long resolvedTickets =
-                ticketRepository.countByStatus(
-                        TicketStatus.RESOLVED);
+                ticketRepository.countByStatusIn(
+                        List.of(
+                                TicketStatus.RESOLVED,
+                                TicketStatus.CLOSED
+                        )
+                );
 
         return new DashboardResponse(
                 users,

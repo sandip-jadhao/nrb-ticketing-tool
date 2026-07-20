@@ -1,5 +1,6 @@
 package com.nibl.ticketing.service.impl;
 
+import com.nibl.ticketing.enums.Role;
 import com.nibl.ticketing.enums.TicketStatus;
 import com.nibl.ticketing.service.TicketService;
 import lombok.RequiredArgsConstructor;
@@ -18,19 +19,38 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private static int currentEngineer = 0;
 
     @Override
     public Ticket createTicket(Ticket ticket) {
 
-        User loggedInUser = getLoggedInUser();
+        User loggedUser = getLoggedInUser();
 
-        ticket.setCreatedBy(loggedInUser);
-        ticket.setStatus(TicketStatus.OPEN);
-        ticket.setAssignedEngineer(null);
+        ticket.setCreatedBy(loggedUser);
+
+        // Get all engineers
+        List<User> engineers =
+                userRepository.findByRole(Role.IT_ENGINEER);
+
+        if (!engineers.isEmpty()) {
+
+            User engineer =
+                    engineers.get(currentEngineer);
+
+            ticket.setAssignedEngineer(engineer);
+
+            ticket.setStatus(TicketStatus.ASSIGNED);
+
+            currentEngineer =
+                    (currentEngineer + 1) % engineers.size();
+
+        } else {
+
+            ticket.setStatus(TicketStatus.OPEN);
+        }
 
         return ticketRepository.save(ticket);
     }
-
     @Override
     public Ticket assignTicket(
             Long ticketId,
@@ -96,5 +116,15 @@ public class TicketServiceImpl implements TicketService {
         User user = getLoggedInUser();
 
         return ticketRepository.findByCreatedById(user.getId());
+    }
+
+    @Override
+    public List<Ticket> getAssignedTickets() {
+
+        User engineer = getLoggedInUser();
+
+        return ticketRepository.findByAssignedEngineerId(
+                engineer.getId()
+        );
     }
 }

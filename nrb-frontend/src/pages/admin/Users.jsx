@@ -196,7 +196,7 @@ function Users() {
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-4 text-left">ID</th>
+                <th className="p-4 text-left">SR No</th>
 
                 <th className="p-4 text-left">Name</th>
 
@@ -230,7 +230,7 @@ function Users() {
 
                   <td className="p-4 text-center">
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleUpdate(user.id)}
                       className="
                         bg-blue-500
                         text-white
