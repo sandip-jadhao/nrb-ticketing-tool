@@ -116,12 +116,12 @@ function Engineers() {
           <button
             onClick={handleCreate}
             className="
-              bg-blue-600
+              bg-black
               text-white
               px-4
               py-2
               rounded
-              hover:bg-blue-700
+              hover:bg-black
             "
           >
             Create Engineer
@@ -223,7 +223,7 @@ function Engineers() {
                   type="button"
                   onClick={() => setShowForm(false)}
                   className="
-                    bg-gray-500
+                    bg-blue-800
                     text-white
                     px-4
                     py-2
@@ -276,12 +276,12 @@ function Engineers() {
                     <button
                       onClick={() => handleEdit(user)}
                       className="
-                        bg-blue-500
+                        bg-blue-800
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-600
+                        hover:bg-blue-900
                       "
                     >
                       Update
@@ -292,12 +292,12 @@ function Engineers() {
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="
-                        bg-red-500
+                        bg-blue-800
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-red-600
+                        hover:bg-blue-900
                       "
                     >
                       Delete

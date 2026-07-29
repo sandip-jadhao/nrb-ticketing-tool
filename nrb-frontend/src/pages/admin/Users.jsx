@@ -232,12 +232,12 @@ function Users() {
                     <button
                       onClick={() => handleUpdate(user.id)}
                       className="
-                        bg-blue-500
+                        bg-blue-800
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-600
+                        hover:bg-blue-900
                       "
                     >
                       Update
@@ -248,12 +248,12 @@ function Users() {
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="
-                        bg-red-500
+                        bg-blue-800
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-red-600
+                        hover:bg-blue-900
                       "
                     >
                       Delete
