@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import EngineerLayout from "../../layouts/EngineerLayout";
 import {getEngineerTickets,updateTicketStatus,} from "../../services/engineerService";
+import { formatDateTime } from "../../utils/dateTime";
 
 function AssignedTickets() {
   const [tickets, setTickets] = useState([]);
@@ -41,6 +42,8 @@ function AssignedTickets() {
               <tr>
                 <th className="p-4 text-left">ID</th>
 
+                <th className="p-4 text-left">Created At</th>
+
                 <th className="p-4 text-left">
                   Title
                 </th>
@@ -67,7 +70,7 @@ function AssignedTickets() {
               {tickets.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     className="text-center p-6 text-gray-500"
                   >
                     No Assigned Tickets
@@ -81,6 +84,10 @@ function AssignedTickets() {
                   >
                     <td className="p-4">
                       {index + 1}
+                    </td>
+
+                    <td className="p-4 whitespace-nowrap">
+                      {formatDateTime(ticket.createdAt)}
                     </td>
 
                     <td className="p-4">

@@ -17,9 +17,9 @@ function UserSidebar() {
 
   return (
 
-    <div className="w-64 bg-[#002855] text-white">
+    <div className="w-64 bg-[#C51B17] text-white">
 
-      <div className="p-6 border-b border-blue-900">
+      <div className="p-6 border-b border-[#991B1B]">
 
         <h1 className="text-2xl font-bold">
           NRB Support
@@ -35,7 +35,7 @@ function UserSidebar() {
 
         <Link
           to="/user/dashboard"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaHome />
           Dashboard
@@ -43,15 +43,23 @@ function UserSidebar() {
 
         <Link
           to="/user/create-ticket"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaPlusCircle />
           Create Ticket
         </Link>
 
         <Link
+          to="/user/tickets"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
+        >
+          <FaTicketAlt />
+          My Tickets
+        </Link>
+
+        <Link
           to="/user/profile"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaUser />
           Profile

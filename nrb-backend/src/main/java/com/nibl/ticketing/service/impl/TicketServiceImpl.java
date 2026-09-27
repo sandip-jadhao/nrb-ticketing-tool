@@ -11,6 +11,7 @@ import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.repository.TicketRepository;
 import com.nibl.ticketing.repository.UserRepository;
 import com.nibl.ticketing.entity.User;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -81,6 +82,12 @@ public class TicketServiceImpl implements TicketService {
                         new RuntimeException("Ticket Not Found"));
 
         ticket.setStatus(status);
+
+        if (status == TicketStatus.RESOLVED) {
+            ticket.setResolvedAt(LocalDateTime.now());
+        } else {
+            ticket.setResolvedAt(null);
+        }
 
         return ticketRepository.save(ticket);
     }

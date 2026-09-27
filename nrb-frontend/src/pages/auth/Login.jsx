@@ -52,9 +52,7 @@ function Login() {
     <div
       className="
       min-h-screen
-      bg-gradient-to-br
-      from-[#002855]
-      to-[#003B7A]
+      bg-white
       flex
       justify-center
       items-center
@@ -80,7 +78,7 @@ function Login() {
             w-20
             h-20
             rounded-full
-            bg-[#003B7A]
+            bg-[#991B1B]
             flex
             justify-center
             items-center
@@ -98,20 +96,13 @@ function Login() {
             className="
             text-3xl
             font-bold
-            text-[#003B7A]
+            text-[#991B1B]
           "
           >
             NRB Support
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            IT Support Ticketing System
-          </p>
-
+          </h1> 
         </div>
-
         {error && (
-
           <div
             className="
             bg-red-100
@@ -212,8 +203,8 @@ function Login() {
             disabled={loading}
             className="
               w-full
-              bg-[#003B7A]
-              hover:bg-[#002855]
+              bg-[#991B1B]
+              hover:bg-[#991B1B]
               text-white
               py-3
               rounded-xl

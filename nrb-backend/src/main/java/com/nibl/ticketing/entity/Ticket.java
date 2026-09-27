@@ -5,6 +5,8 @@ import com.nibl.ticketing.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "tickets")
 @Getter
@@ -24,6 +26,8 @@ public class Ticket extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
+
+    private LocalDateTime resolvedAt;
 
     @ManyToOne
     @JoinColumn(name = "created_by")

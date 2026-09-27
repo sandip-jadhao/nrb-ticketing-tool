@@ -9,8 +9,8 @@ function EngineerSidebar() {
   };
 
   return (
-    <div className="w-64 bg-[#002855] text-white">
-      <div className="p-6 border-b border-blue-900">
+    <div className="w-64 bg-[#C51B17] text-white">
+      <div className="p-6 border-b border-[#991B1B]">
         <h1 className="text-2xl font-bold">NRB Support</h1>
 
         <p className="text-gray-300 text-sm">Engineer Portal</p>
@@ -19,7 +19,7 @@ function EngineerSidebar() {
       <div className="p-4 space-y-2">
         <Link
           to="/engineer/dashboard"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaHome />
           Dashboard
@@ -27,7 +27,7 @@ function EngineerSidebar() {
 
         <Link
           to="/engineer/tickets"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaTicketAlt />
           Assigned Tickets
@@ -35,7 +35,7 @@ function EngineerSidebar() {
 
         <Link
           to="/engineer/profile"
-          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
         >
           <FaUser />
           Profile

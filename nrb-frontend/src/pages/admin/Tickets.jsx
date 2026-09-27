@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import { getTickets, deleteTicket } from "../../services/adminService";
+import { formatDateTime } from "../../utils/dateTime";
 
 function Tickets() {
   const [tickets, setTickets] = useState([]);
@@ -31,26 +32,30 @@ function Tickets() {
   return (
     <AdminLayout>
       <div>
-        <div className="flex justify-between mb-6">
+        <div className="flex justify-between mb-4">
           <h1 className="text-3xl font-bold text-gray-800 "> Tickets</h1>
         </div>
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-4 text-left">SR No</th>
+                <th className="p-3 text-left">SR No</th>
 
-                <th className="p-4 text-left">Title</th>
+                <th className="p-3 text-left">Title</th>
 
-                <th className="p-4 text-left">Priority</th>
+                <th className="p-3 text-left">Created At</th>
 
-                <th className="p-4 text-left">Status</th>
+                <th className="p-3 text-left">Priority</th>
 
-                <th className="p-4 text-left">Created By</th>
+                <th className="p-3 text-left">Status</th>
 
-                <th className="p-4 text-left">Assigned Engineer</th>
+                <th className="p-3 text-left">Resolved At</th>
 
-                <th className="p-4 text-center">Action</th>
+                <th className="p-3 text-left">Created By</th>
+
+                <th className="p-3 text-left">Assigned Engineer</th>
+
+                <th className="p-3 text-center">Action</th>
               </tr>
             </thead>
 
@@ -67,6 +72,10 @@ function Tickets() {
 
                   <td className="p-4">{ticket.title}</td>
 
+                  <td className="p-4 whitespace-nowrap">
+                    {formatDateTime(ticket.createdAt)}
+                  </td>
+
                   <td className="p-4">
                     <span
                       className={`
@@ -78,12 +87,12 @@ function Tickets() {
 
                         ${
                           ticket.priority === "CRITICAL"
-                          ? "bg-black text-white"
+                          ? "bg-red-600 text-white"
                           : ticket.priority === "HIGH"
-                           ? "bg-gray-800 text-white"
+                           ? "bg-orange-400 text-white"
                             : ticket.priority === "MEDIUM"
-                             ? "bg-gray-600 text-white"
-                             : "bg-gray-400 text-white"
+                             ? "bg-amber-600 text-white"
+                             : "bg-green-600 text-white"
                         }
                       `}
                     >
@@ -91,21 +100,16 @@ function Tickets() {
                     </span>
                   </td>
                   <td className="p-4">{ticket.status}</td>
+                  <td className="p-4 whitespace-nowrap">
+                    {formatDateTime(ticket.resolvedAt)}
+                  </td>
                   <td className="p-4">
                     <div>
                       <p>
-                        {ticket.createdBy?.firstName}{" "}
-                        {ticket.createdBy?.lastName}
+                        {ticket.createdBy?.firstName}{" "}{ticket.createdBy?.lastName}
                       </p>
 
-                      <p
-                        className="
-                        text-sm
-                        text-gray-500
-                      "
-                      >
-                        {ticket.createdBy?.email}
-                      </p>
+                      
                     </div>
                   </td>
                   <td className="p-4">
@@ -114,15 +118,6 @@ function Tickets() {
                         <p>
                           {ticket.assignedEngineer?.firstName}{" "}
                           {ticket.assignedEngineer?.lastName}
-                        </p>
-
-                        <p
-                          className="
-                            text-sm
-                            text-gray-500
-                          "
-                        >
-                          {ticket.assignedEngineer?.email}
                         </p>
                       </div>
                     ) : (
@@ -144,12 +139,12 @@ function Tickets() {
                     <button
                       onClick={() => handleDelete(ticket.id)}
                       className="
-                      bg-gray-800
+                      bg-red-600
                        text-white
                        px-3
                         py-1
                         rounded
-                         hover:bg-black
+                         hover:bg-red-900
                         transition
                     "
                     >

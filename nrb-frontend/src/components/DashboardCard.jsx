@@ -9,7 +9,7 @@ function DashboardCard({
         {title}
       </h3>
 
-      <h1 className="text-4xl font-bold text-[#003B7A] mt-3">
+      <h1 className="text-4xl font-bold text-[#C51B17] mt-3">
         {count}
       </h1>
 

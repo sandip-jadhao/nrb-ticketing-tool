@@ -12,6 +12,7 @@ import AssignedTickets from "./pages/engineer/AssignedTickets";
 import UserDashboard from "./pages/user/UserDashboard";
 import CreateTicket from "./pages/user/CreateTicket";
 import UserProfile from "./pages/user/UserProfile";
+import MyTickets from "./pages/user/MyTickets";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/user/dashboard" element={<UserDashboard />} />
         <Route path="/user/create-ticket" element={<CreateTicket />} />
         <Route path="/user/profile" element={<UserProfile />} /> 
+        <Route path="/user/tickets" element={<MyTickets />} />
 
         <Route path="/engineer/tickets" element={<AssignedTickets />}/>
       </Routes>

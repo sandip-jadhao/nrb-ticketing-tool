@@ -116,12 +116,12 @@ function Engineers() {
           <button
             onClick={handleCreate}
             className="
-              bg-black
+              bg-red-700
               text-white
               px-4
               py-2
               rounded
-              hover:bg-black
+              hover:bg-red-800
             "
           >
             Create Engineer
@@ -209,11 +209,12 @@ function Engineers() {
                 <button
                   type="submit"
                   className="
-                    bg-green-600
+                    bg-red-600
                     text-white
                     px-4
                     py-2
                     rounded
+                    hover:bg-red-800
                   "
                 >
                   {editingUser ? "Update" : "Create"}
@@ -223,11 +224,12 @@ function Engineers() {
                   type="button"
                   onClick={() => setShowForm(false)}
                   className="
-                    bg-blue-800
+                    bg-red-600
                     text-white
                     px-4
                     py-2
                     rounded
+                    hover:bg-red-800
                   "
                 >
                   Cancel
@@ -276,12 +278,12 @@ function Engineers() {
                     <button
                       onClick={() => handleEdit(user)}
                       className="
-                        bg-blue-800
+                        bg-red-700
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-900
+                        hover:bg-red-900
                       "
                     >
                       Update
@@ -292,12 +294,12 @@ function Engineers() {
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="
-                        bg-blue-800
+                        bg-red-700
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-900
+                        hover:bg-red-900
                       "
                     >
                       Delete

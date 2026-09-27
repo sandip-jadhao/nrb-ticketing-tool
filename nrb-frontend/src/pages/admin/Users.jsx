@@ -39,12 +39,8 @@ function Users() {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-      console.log("FORM SUBMITTED");
     try {
-      console.log("BEFORE API CALL");
      const response= await createUser(newUser);
-      console.log("AFTER API CALL");
-      console.log(response);
       loadUsers();
 
       setShowForm(false);
@@ -79,11 +75,11 @@ function Users() {
     <AdminLayout>
       <div>
         <div className="flex justify-between mb-6">
-          <h1 className="text-3xl font-bold">Users Management</h1>
+          <h1 className="text-3xl font-bold">Users</h1>
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-900"
           >
             Create User
           </button>
@@ -176,7 +172,7 @@ function Users() {
               <div className="col-span-2 flex gap-2">
                 <button
                   type="submit"
-                  className="bg-green-600 text-white px-4 py-2 rounded"
+                  className="bg-red-600 hover:bg-red-900 text-white px-4 py-2 rounded"
                 >
                   Save
                 </button>
@@ -184,7 +180,7 @@ function Users() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  className="bg-red-600 hover:bg-red-900 text-white border-2 border-white px-4 py-2 rounded"
                 >
                   Cancel
                 </button>
@@ -232,12 +228,12 @@ function Users() {
                     <button
                       onClick={() => handleUpdate(user.id)}
                       className="
-                        bg-blue-800
+                        bg-red-700
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-900
+                        hover:bg-red-800
                       "
                     >
                       Update
@@ -248,12 +244,12 @@ function Users() {
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="
-                        bg-blue-800
+                        bg-red-700
                         text-white
                         px-3
                         py-1
                         rounded
-                        hover:bg-blue-900
+                        hover:bg-red-800
                       "
                     >
                       Delete
