@@ -5,9 +5,11 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import Users from "./pages/admin/Users";
 import Engineers from "./pages/admin/Engineers";
 import Tickets from "./pages/admin/Tickets";
+import AdminProfile from "./pages/admin/AdminProfile";
 
 import EngineerDashboard from "./pages/engineer/EngineerDashboard";
 import AssignedTickets from "./pages/engineer/AssignedTickets";
+import EngineerProfile from "./pages/engineer/EngineerProfile";
 
 import UserDashboard from "./pages/user/UserDashboard";
 import CreateTicket from "./pages/user/CreateTicket";
@@ -26,6 +28,7 @@ function App() {
         <Route path="/admin/engineers" element={<Engineers />} />
         <Route path="/admin/tickets" element={<Tickets />} />
         <Route path="/engineer/dashboard" element={<EngineerDashboard />} />
+        <Route path="/admin/AdminProfile" element={<AdminProfile/>}/>
 
         <Route path="/user/dashboard" element={<UserDashboard />} />
         <Route path="/user/create-ticket" element={<CreateTicket />} />
@@ -33,6 +36,7 @@ function App() {
         <Route path="/user/tickets" element={<MyTickets />} />
 
         <Route path="/engineer/tickets" element={<AssignedTickets />}/>
+        <Route path="/engineer/EngineerProfile" element={<EngineerProfile/>}/>
       </Routes>
     </BrowserRouter>
   );

@@ -41,13 +41,13 @@ function CreateTicket() {
   return (
     <UserLayout>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl ">
 
-        <div className="bg-white rounded-lg shadow p-8">
+        <div className="bg-white rounded-lg shadow p-4">
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-6"
+            className="space-y-3"
           >
 
             <div>
@@ -75,11 +75,11 @@ function CreateTicket() {
               </label>
 
               <textarea
-                rows="6"
+                rows="3"
                 name="description"
                 value={ticket.description}
                 onChange={handleChange}
-                className="w-full border rounded-lg p-3"
+                className="w-full border rounded-lg p-2"
                 placeholder="Describe your issue"
                 required
               />
@@ -108,7 +108,7 @@ function CreateTicket() {
 
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
             >
               Create Ticket
             </button>

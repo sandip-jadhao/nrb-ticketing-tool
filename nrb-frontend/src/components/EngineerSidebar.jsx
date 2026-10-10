@@ -34,8 +34,13 @@ function EngineerSidebar() {
         </Link>
 
         <Link
+<<<<<<< HEAD
           to="/engineer/profile"
           className="flex items-center gap-3 p-3 rounded hover:bg-[#991B1B]"
+=======
+          to="/engineer/EngineerProfile"
+          className="flex items-center gap-3 p-3 rounded hover:bg-[#003B7A]"
+>>>>>>> b333a12 (feat: add profiles and initialize data)
         >
           <FaUser />
           Profile

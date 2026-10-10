@@ -41,9 +41,13 @@ function AssignedTickets() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-4 text-left">ID</th>
+<<<<<<< HEAD
 
                 <th className="p-4 text-left">Created At</th>
 
+=======
+                <th className="p-4 text-left">Created At</th>
+>>>>>>> b333a12 (feat: add profiles and initialize data)
                 <th className="p-4 text-left">
                   Title
                 </th>
@@ -85,11 +89,17 @@ function AssignedTickets() {
                     <td className="p-4">
                       {index + 1}
                     </td>
+<<<<<<< HEAD
 
                     <td className="p-4 whitespace-nowrap">
                       {formatDateTime(ticket.createdAt)}
                     </td>
 
+=======
+                    <td className="p-4">
+                      {ticket.created_at}
+                    </td>
+>>>>>>> b333a12 (feat: add profiles and initialize data)
                     <td className="p-4">
                       {ticket.title}
                     </td>

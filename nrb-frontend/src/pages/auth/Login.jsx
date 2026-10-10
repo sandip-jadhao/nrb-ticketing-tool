@@ -52,25 +52,32 @@ function Login() {
     <div
       className="
       min-h-screen
+<<<<<<< HEAD
       bg-white
+=======
+      bg-gradient-to-br
+      from-[#FBFBF9]
+      to-[#FBFBF9]
+>>>>>>> b333a12 (feat: add profiles and initialize data)
       flex
       justify-center
       items-center
-      p-4
+      p-2
     "
     >
 
       <div
         className="
-        bg-white
+        bg-[#FBFBF9]
         w-full
         max-w-md
         rounded-3xl
         shadow-2xl
-        p-10
+        p-7
       "
       >
 
+<<<<<<< HEAD
         <div className="text-center mb-8">
 
           <div
@@ -91,16 +98,37 @@ function Login() {
               size={30}
             />
           </div>
+=======
+        <div className="text-center mb-6">
+>>>>>>> b333a12 (feat: add profiles and initialize data)
 
+  <img
+  src="https://nrbindustrialbearings.com/img/logo.jpg"
+  alt="NRB Industrial Bearings"
+  className="w-30 h-30 object-contain mx-auto mb-3"
+/>
           <h1
             className="
             text-3xl
             font-bold
+<<<<<<< HEAD
             text-[#991B1B]
           "
           >
             NRB Support
           </h1> 
+=======
+            text-[#A6221D]
+          "
+          >
+            NRBL IT Support
+          </h1>
+
+          <p className="text-gray-500 mt-2">
+           Ticketing System
+          </p>
+
+>>>>>>> b333a12 (feat: add profiles and initialize data)
         </div>
         {error && (
           <div
@@ -109,7 +137,7 @@ function Login() {
             text-red-700
             p-3
             rounded-lg
-            mb-5
+            mb-3
           "
           >
             {error}
@@ -119,7 +147,7 @@ function Login() {
 
         <form
           onSubmit={handleLogin}
-          className="space-y-5"
+          className="space-y-4"
         >
 
           <div>
@@ -203,8 +231,13 @@ function Login() {
             disabled={loading}
             className="
               w-full
+<<<<<<< HEAD
               bg-[#991B1B]
               hover:bg-[#991B1B]
+=======
+              bg-[#A6221D]
+              hover:bg-[#A6221D]
+>>>>>>> b333a12 (feat: add profiles and initialize data)
               text-white
               py-3
               rounded-xl

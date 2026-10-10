@@ -4,6 +4,7 @@ import com.nibl.ticketing.entity.User;
 import com.nibl.ticketing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.nibl.ticketing.dto.ProfileResponse;
 
 import java.util.List;
 
@@ -33,5 +34,22 @@ public class AdminController {
             @PathVariable Long id) {
 
         userService.deleteUser(id);
+    }
+
+     @GetMapping("/profile")
+    public ProfileResponse getProfile() {
+
+        User user = userService.getLoggedInUser();
+
+        return new ProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getMobileNo(),
+                user.getDepartment(),
+                user.getDesignation(),
+                user.getRole().name()
+        );
     }
 }

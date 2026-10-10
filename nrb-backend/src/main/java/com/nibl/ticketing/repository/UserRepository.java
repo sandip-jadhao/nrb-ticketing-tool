@@ -13,4 +13,5 @@ public interface UserRepository
     Optional<User> findByEmail(String email);
     long countByRole(Role role);
     List<User> findByRole(Role role);
+    boolean existsByEmail(String email);
 }

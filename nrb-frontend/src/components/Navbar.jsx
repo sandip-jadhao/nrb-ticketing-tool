@@ -4,7 +4,15 @@ function Navbar() {
   const lastName = localStorage.getItem("lastName") || "";
 
   return (
+<<<<<<< HEAD
     <div className="h-16 bg-white shadow flex items-center justify-end px-8">
+=======
+    <div className="h-16 bg-white shadow flex items-center justify-between px-8">
+
+      <h2 className="text-2xl font-bold text-[#003B7A]">
+        
+      </h2>
+>>>>>>> b333a12 (feat: add profiles and initialize data)
 
       <div className="flex items-center gap-3">
 
@@ -17,9 +25,7 @@ function Navbar() {
             {firstName} {lastName}
           </p>
         </div>
-
       </div>
-
     </div>
   );
 }
