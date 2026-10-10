@@ -35,8 +35,8 @@ function Tickets() {
         <div className="flex justify-between mb-4">
           <h1 className="text-3xl font-bold text-gray-800 "> Tickets</h1>
         </div>
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full">
+        <div className="w-full min-w-0 bg-white rounded-lg shadow overflow-x-auto">
+          <table className="w-full min-w-[1000px]">
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-3 text-left">SR No</th>

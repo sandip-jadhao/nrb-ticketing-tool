@@ -77,7 +77,6 @@ function Login() {
       "
       >
 
-<<<<<<< HEAD
         <div className="text-center mb-8">
 
           <div
@@ -98,9 +97,6 @@ function Login() {
               size={30}
             />
           </div>
-=======
-        <div className="text-center mb-6">
->>>>>>> b333a12 (feat: add profiles and initialize data)
 
   <img
   src="https://nrbindustrialbearings.com/img/logo.jpg"
@@ -111,24 +107,11 @@ function Login() {
             className="
             text-3xl
             font-bold
-<<<<<<< HEAD
             text-[#991B1B]
           "
           >
             NRB Support
           </h1> 
-=======
-            text-[#A6221D]
-          "
-          >
-            NRBL IT Support
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-           Ticketing System
-          </p>
-
->>>>>>> b333a12 (feat: add profiles and initialize data)
         </div>
         {error && (
           <div

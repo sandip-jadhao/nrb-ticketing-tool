@@ -82,11 +82,6 @@ function AdminProfile() {
               <p className="text-gray-500">
                 {profile.designation}
               </p>
-
-              <p className="text-sm text-gray-500">
-                {profile.role}
-              </p>
-
             </div>
 
           </div>

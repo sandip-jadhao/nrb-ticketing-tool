@@ -19,7 +19,7 @@ function UserSidebar() {
 
     <div className="w-64 bg-[#C51B17] text-white">
 
-      <div className="p-6 border-b border-[#991B1B]">
+      <div className="p-2 border-b border-[#991B1B]">
 
         <h1 className="text-2xl font-bold">
           NRB Support

@@ -3,18 +3,16 @@ import Navbar from "../components/Navbar";
 
 function AdminLayout({ children }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full">
+      <aside className="w-64 shrink-0 self-stretch">
+        <Sidebar />
+      </aside>
 
-      <Sidebar />
-
-      <div className="flex-1 bg-slate-100">
-
+      <div className=" flex flex-1 min-w-0 flex-col bg-slate-100">
         <Navbar />
-
-        <div className="p-6">
-          {children}
-        </div>
-
+        <main className=" flex-1 min-w-0 p-6">
+         {children}
+        </main>
       </div>
     </div>
   );

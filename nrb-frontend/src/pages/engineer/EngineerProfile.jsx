@@ -51,11 +51,6 @@ function EngineerProfile() {
               <h1 className="text-2xl font-bold text-[#003B7A]">
                 {profile.firstName} {profile.lastName}
               </h1>
-
-              <p className="text-gray-500">
-                IT Engineer
-              </p>
-
               <p className="text-sm text-gray-500">
                 {profile.role}
               </p>

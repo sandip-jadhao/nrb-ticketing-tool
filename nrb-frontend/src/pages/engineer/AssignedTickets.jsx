@@ -41,13 +41,7 @@ function AssignedTickets() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-4 text-left">ID</th>
-<<<<<<< HEAD
-
                 <th className="p-4 text-left">Created At</th>
-
-=======
-                <th className="p-4 text-left">Created At</th>
->>>>>>> b333a12 (feat: add profiles and initialize data)
                 <th className="p-4 text-left">
                   Title
                 </th>
@@ -86,25 +80,17 @@ function AssignedTickets() {
                     key={ticket.id}
                     className="border-t hover:bg-gray-50"
                   >
-                    <td className="p-4">
+                    <td className="p-2">
                       {index + 1}
                     </td>
-<<<<<<< HEAD
-
-                    <td className="p-4 whitespace-nowrap">
-                      {formatDateTime(ticket.createdAt)}
+                    <td className="p-2 whitespace-nowrap">
+                      {ticket.createdAt ? formatDateTime(ticket.createdAt) : "N/A"}
                     </td>
-
-=======
-                    <td className="p-4">
-                      {ticket.created_at}
-                    </td>
->>>>>>> b333a12 (feat: add profiles and initialize data)
-                    <td className="p-4">
+                    <td className="p-2">
                       {ticket.title}
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-2">
                       <span
                         className={`px-2 py-1 rounded text-white text-sm
                         ${

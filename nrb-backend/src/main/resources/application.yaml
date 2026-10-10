@@ -19,22 +19,12 @@ spring:
   jackson:
     time-zone: Asia/Kolkata
 
-<<<<<<< HEAD
-=======
 jwt:
   secret: MySuperSecretJwtKeyForTicketingApplication123456789
   expiration: 86400000
 
->>>>>>> b333a12 (feat: add profiles and initialize data)
 logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.security: DEBUG
-<<<<<<< HEAD
-
-jwt:
-  secret: MySuperSecretJwtKeyForTicketingApplication123456789
-  expiration: 86400000
-=======
->>>>>>> b333a12 (feat: add profiles and initialize data)
