@@ -43,16 +43,14 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-
-                        .requestMatchers(
-                                "/api/auth/**")
+                          .requestMatchers(
+                                "/api/auth/**","/ws-ticketing/**")
                         .permitAll()
-
                         .requestMatchers(
                                 "/api/admin/**")
                         .hasRole("ADMIN")
-
                         .requestMatchers(
                                 "/api/engineer/**")
                         .hasRole("IT_ENGINEER")

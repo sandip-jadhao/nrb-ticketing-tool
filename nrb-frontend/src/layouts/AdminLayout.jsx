@@ -3,14 +3,14 @@ import Navbar from "../components/Navbar";
 
 function AdminLayout({ children }) {
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
       <aside className="w-64 shrink-0 self-stretch">
         <Sidebar />
       </aside>
 
-      <div className=" flex flex-1 min-w-0 flex-col bg-slate-100">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Navbar />
-        <main className=" flex-1 min-w-0 p-6">
+        <main className="flex-1 overflow-hidden pl-6 pr-2 py-4 flex flex-col">
          {children}
         </main>
       </div>

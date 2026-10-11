@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import UserLayout from "../../layouts/UserLayout";
 import DashboardCard from "../../components/DashboardCard";
 import { getTickets } from "../../services/ticketService";
+import { wsService } from "../../services/websocketService";
 
 function UserDashboard() {
   const [stats, setStats] = useState({
@@ -13,13 +14,22 @@ function UserDashboard() {
 
   useEffect(() => {
     loadTickets();
+
+    wsService.connect(() => {
+      wsService.subscribe("/topic/tickets", () => {
+        loadTickets();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+    };
   }, []);
 
   const loadTickets = async () => {
     try {
       const response = await getTickets();
 
-      
       const myTickets = response.data;
 
       const open = myTickets.filter(

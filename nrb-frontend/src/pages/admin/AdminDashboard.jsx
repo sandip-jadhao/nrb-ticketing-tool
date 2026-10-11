@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
 import DashboardCard from "../../components/DashboardCard";
 import { getDashboardData } from "../../services/adminService";
+import { wsService } from "../../services/websocketService";
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -13,24 +14,32 @@ function AdminDashboard() {
 
   useEffect(() => {
     loadDashboard();
+
+    wsService.connect(() => {
+      wsService.subscribe("/topic/tickets", () => {
+        loadDashboard();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+    };
   }, []);
 
   const loadDashboard = async () => {
-  try {
-    const data = await getDashboardData();
-
-    console.log("Dashboard Data:", data);
-
-    setStats(data);
-  } catch (error) {
-    console.error("Failed to load dashboard data:", error);
-  }
-};  
+    try {
+      const data = await getDashboardData();
+      console.log("Dashboard Data:", data);
+      setStats(data);
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error);
+    }
+  };
 
   return (
     <AdminLayout>
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        <h1 className="text-1xl font-bold text-gray-800 mb-6">
           Admin Dashboard
         </h1>
 

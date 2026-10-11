@@ -1,19 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import EngineerLayout from "../../layouts/EngineerLayout";
-import {getEngineerTickets,updateTicketStatus,} from "../../services/engineerService";
+import {
+  getEngineerTickets,
+  updateTicketStatus,
+} from "../../services/engineerService";
+import { wsService } from "../../services/websocketService";
 import { formatDateTime } from "../../utils/dateTime";
+
+const STATUS_WEIGHTS = {
+  ASSIGNED: 0,
+  IN_PROGRESS: 0,
+  RESOLVED: 1,
+  REJECTED: 1,
+};
+
+const PRIORITY_WEIGHTS = {
+  CRITICAL: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
 
 function AssignedTickets() {
   const [tickets, setTickets] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     loadTickets();
+
+    wsService.connect(() => {
+      wsService.subscribe("/topic/tickets", () => {
+        loadTickets();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+    };
   }, []);
 
   const loadTickets = async () => {
     try {
       const response = await getEngineerTickets();
-      setTickets(response.data);
+      setTickets(response.data || []);
     } catch (error) {
       console.log(error);
     }
@@ -22,50 +52,73 @@ function AssignedTickets() {
   const handleStatusChange = async (id, status) => {
     try {
       await updateTicketStatus(id, status);
-      loadTickets();
+      // Optimistically update local array so sorted order recalculates instantly
+      setTickets((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, status } : t))
+      );
     } catch (error) {
       console.log(error);
       alert("Unable to update ticket status");
     }
   };
 
+  // Memoized sorting for large arrays
+  const sortedTickets = useMemo(() => {
+    return [...tickets].sort((a, b) => {
+      // 1. Active tickets first, Resolved/Rejected at bottom
+      const statusA = STATUS_WEIGHTS[a.status] ?? 0;
+      const statusB = STATUS_WEIGHTS[b.status] ?? 0;
+      if (statusA !== statusB) {
+        return statusA - statusB;
+      }
+
+      // 2. Priority sorting (CRITICAL -> HIGH -> MEDIUM -> LOW)
+      const priorityA = PRIORITY_WEIGHTS[a.priority] ?? 4;
+      const priorityB = PRIORITY_WEIGHTS[b.priority] ?? 4;
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // 3. Newest tickets first
+      const timeA = a.createdAt ? Date.parse(a.createdAt) : 0;
+      const timeB = b.createdAt ? Date.parse(b.createdAt) : 0;
+      return timeB - timeA;
+    });
+  }, [tickets]);
+
+  // Windowed pagination
+  const totalPages = Math.ceil(sortedTickets.length / pageSize) || 1;
+  const paginatedTickets = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return sortedTickets.slice(startIndex, startIndex + pageSize);
+  }, [sortedTickets, currentPage, pageSize]);
+
   return (
     <EngineerLayout>
       <div>
-        <h1 className="text-3xl font-bold mb-6">
-          Assigned Tickets
-        </h1>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-1xl font-bold text-gray-800">Assigned Tickets</h1>
+          <span className="text-sm text-gray-500 font-medium">
+            Total Assigned: {tickets.length.toLocaleString()}
+          </span>
+        </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
+        <div className="w-full bg-white rounded-lg shadow overflow-y-auto max-h-[calc(100vh-200px)] border border-gray-200">
+          <table className="w-full table-auto border-collapse">
+            <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="p-4 text-left">ID</th>
-                <th className="p-4 text-left">Created At</th>
-                <th className="p-4 text-left">
-                  Title
-                </th>
-
-                <th className="p-4 text-left">
-                  Priority
-                </th>
-
-                <th className="p-4 text-left">
-                  Created By
-                </th>
-
-                <th className="p-4 text-left">
-                  Current Status
-                </th>
-
-                <th className="p-4 text-center">
-                  Update Status
-                </th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">S.N.</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Created At</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Title</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Priority</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Created By</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Current Status</th>
+                <th className="p-3 text-left bg-gray-100 font-bold text-black">Update Status</th>
               </tr>
             </thead>
 
             <tbody>
-              {tickets.length === 0 ? (
+              {paginatedTickets.length === 0 ? (
                 <tr>
                   <td
                     colSpan="7"
@@ -75,25 +128,22 @@ function AssignedTickets() {
                   </td>
                 </tr>
               ) : (
-                tickets.map((ticket, index) => (
+                paginatedTickets.map((ticket, index) => (
                   <tr
                     key={ticket.id}
-                    className="border-t hover:bg-gray-50"
+                    className="border-t hover:bg-gray-50 transition-colors"
                   >
-                    <td className="p-2">
-                      {index + 1}
+                    <td className="p-3 text-gray-600">
+                      {(currentPage - 1) * pageSize + index + 1}
                     </td>
-                    <td className="p-2 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap">
                       {ticket.createdAt ? formatDateTime(ticket.createdAt) : "N/A"}
                     </td>
-                    <td className="p-2">
-                      {ticket.title}
-                    </td>
+                    <td className="p-3 font-medium text-gray-800">{ticket.title}</td>
 
-                    <td className="p-2">
+                    <td className="p-3">
                       <span
-                        className={`px-2 py-1 rounded text-white text-sm
-                        ${
+                        className={`px-2 py-1 rounded text-white text-sm font-medium ${
                           ticket.priority === "LOW"
                             ? "bg-green-500"
                             : ticket.priority === "MEDIUM"
@@ -108,40 +158,37 @@ function AssignedTickets() {
                     </td>
 
                     <td className="p-4">
-                      {ticket.createdBy?.firstName}{" "}
-                      {ticket.createdBy?.lastName}
+                      {ticket.createdBy?.firstName} {ticket.createdBy?.lastName}
                     </td>
 
                     <td className="p-4">
-                      {ticket.status}
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-semibold ${
+                          ticket.status === "RESOLVED"
+                            ? "bg-green-100 text-green-800"
+                            : ticket.status === "REJECTED"
+                            ? "bg-gray-200 text-gray-700"
+                            : ticket.status === "IN_PROGRESS"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {ticket.status}
+                      </span>
                     </td>
 
                     <td className="p-4 text-center">
                       <select
                         value={ticket.status}
                         onChange={(e) =>
-                          handleStatusChange(
-                            ticket.id,
-                            e.target.value
-                          )
+                          handleStatusChange(ticket.id, e.target.value)
                         }
-                        className="border rounded px-3 py-2"
+                        className="border rounded px-3 py-2 bg-white"
                       >
-                        <option value="ASSIGNED">
-                          ASSIGNED
-                        </option>
-
-                        <option value="IN_PROGRESS">
-                          IN_PROGRESS
-                        </option>
-
-                        <option value="RESOLVED">
-                          RESOLVED
-                        </option>
-
-                        <option value="REJECTED">
-                          REJECTED
-                        </option>
+                        <option value="ASSIGNED">ASSIGNED</option>
+                        <option value="IN_PROGRESS">IN_PROGRESS</option>
+                        <option value="RESOLVED">RESOLVED</option>
+                        <option value="REJECTED">REJECTED</option>
                       </select>
                     </td>
                   </tr>
@@ -149,6 +196,50 @@ function AssignedTickets() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Scalable Pagination Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Rows per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="border border-gray-300 rounded px-2 py-1 bg-white"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>
+              Showing {sortedTickets.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{" "}
+              {Math.min(currentPage * pageSize, sortedTickets.length)} of {sortedTickets.length}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-sm font-medium px-2">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
     </EngineerLayout>

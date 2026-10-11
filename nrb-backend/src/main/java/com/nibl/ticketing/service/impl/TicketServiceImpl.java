@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.repository.TicketRepository;
 import com.nibl.ticketing.repository.UserRepository;
@@ -20,6 +21,7 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
     private static int currentEngineer = 0;
 
     @Override
@@ -50,8 +52,11 @@ public class TicketServiceImpl implements TicketService {
             ticket.setStatus(TicketStatus.OPEN);
         }
 
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
+        return savedTicket;
     }
+
     @Override
     public Ticket assignTicket(
             Long ticketId,
@@ -68,7 +73,9 @@ public class TicketServiceImpl implements TicketService {
         ticket.setAssignedEngineer(engineer);
         ticket.setStatus(TicketStatus.ASSIGNED);
 
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
+        return savedTicket;
     }
 
     @Override
@@ -89,7 +96,9 @@ public class TicketServiceImpl implements TicketService {
             ticket.setResolvedAt(null);
         }
 
-        return ticketRepository.save(ticket);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
+        return savedTicket;
     }
 
     @Override
@@ -102,10 +111,12 @@ public class TicketServiceImpl implements TicketService {
 
         return ticketRepository.findByCreatedById(userId);
     }
+
     @Override
     public void deleteTicket(Long id) {
         ticketRepository.deleteById(id);
     }
+
     private User getLoggedInUser() {
 
         Authentication authentication =
@@ -117,6 +128,7 @@ public class TicketServiceImpl implements TicketService {
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
     }
+
     @Override
     public List<Ticket> getMyTickets() {
 

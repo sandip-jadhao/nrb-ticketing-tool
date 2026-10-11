@@ -40,7 +40,7 @@ function Users() {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-     const response= await createUser(newUser);
+      await createUser(newUser);
       loadUsers();
 
       setShowForm(false);
@@ -58,7 +58,7 @@ function Users() {
 
       alert("User Created Successfully");
     } catch (error) {
-    console.log(error);
+      console.log(error);
     }
   };
   
@@ -75,7 +75,7 @@ function Users() {
     <AdminLayout>
       <div>
         <div className="flex justify-between mb-6">
-          <h1 className="text-3xl font-bold">Users</h1>
+          <h1 className="text-1xl font-bold">Users</h1>
 
           <button
             onClick={() => setShowForm(!showForm)}

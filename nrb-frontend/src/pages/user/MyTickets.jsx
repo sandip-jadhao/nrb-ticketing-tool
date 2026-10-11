@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
 import UserLayout from "../../layouts/UserLayout";
 import { getTickets } from "../../services/ticketService";
+import { wsService } from '../../services/websocketService';
 import { formatDateTime } from "../../utils/dateTime";
 
 function MyTickets() {
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    const loadTickets = async () => {
-      try {
-        const response = await getTickets();
-        setTickets(response.data);
-      } catch (error) {
-        console.error("Unable to load tickets", error);
-      }
-    };
-
     loadTickets();
+
+    wsService.connect(() => {
+      wsService.subscribe('/topic/tickets', () => {
+        loadTickets();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe('/topic/tickets');
+    };
   }, []);
+
+  const loadTickets = async () => {
+    try {
+      const response = await getTickets();
+      setTickets(response.data);
+    } catch (error) {
+      console.error("Unable to load tickets", error);
+    }
+  };
 
   return (
     <UserLayout>

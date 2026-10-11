@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import EngineerLayout from "../../layouts/EngineerLayout";
 import DashboardCard from "../../components/DashboardCard";
 import { getEngineerTickets } from "../../services/engineerService";
+import { wsService } from "../../services/websocketService";
 
 function EngineerDashboard() {
 
@@ -14,6 +15,16 @@ function EngineerDashboard() {
 
   useEffect(() => {
     loadTickets();
+
+    wsService.connect(() => {
+      wsService.subscribe("/topic/tickets", () => {
+        loadTickets();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+    };
   }, []);
 
   const loadTickets = async () => {
@@ -54,7 +65,7 @@ function EngineerDashboard() {
 
       <div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        <h1 className="text-1xl font-bold text-gray-800 mb-6">
           Engineer Dashboard
         </h1>
 

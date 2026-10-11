@@ -111,7 +111,7 @@ function Engineers() {
     <AdminLayout>
       <div>
         <div className="flex justify-between mb-6">
-          <h1 className="text-3xl font-bold">Engineers Management</h1>
+          <h1 className="text-1xl font-bold">Engineers</h1>
 
           <button
             onClick={handleCreate}
