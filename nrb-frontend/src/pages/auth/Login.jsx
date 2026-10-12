@@ -59,7 +59,7 @@ function Login() {
           />
 
           <h1 className="text-2xl font-bold text-[#991B1B] tracking-tight">
-            NRB Support
+            IT Support
           </h1>
         </div>
 

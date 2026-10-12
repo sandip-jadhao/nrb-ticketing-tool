@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import {getUsers,deleteUser,createUser,} from "../../services/adminService";
+import { getUsers, deleteUser, createUser} from "../../services/adminService";
+import { wsService } from "../../services/websocketService";
 
 function Engineers() {
   const [users, setUsers] = useState([]);
-
   const [showForm, setShowForm] = useState(false);
-
   const [editingUser, setEditingUser] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -20,31 +19,55 @@ function Engineers() {
     role: "IT_ENGINEER",
   });
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
     try {
       const response = await getUsers();
-
       const engineers = response.data.filter(
-        (user) => user.role === "IT_ENGINEER",
+        (user) => user.role === "IT_ENGINEER"
       );
-
       setUsers(engineers);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to load engineers:", error);
     }
   };
+
+  useEffect(() => {
+    loadUsers();
+
+    // Subscribe to real-time user events
+    wsService.connect(() => {
+      wsService.subscribe("/topic/users", (incoming) => {
+        if (incoming.deletedUserId) {
+          // Instantly filter out deleted engineer
+          setUsers((prev) => prev.filter((u) => u.id !== incoming.deletedUserId));
+        } else if (incoming.role === "IT_ENGINEER") {
+          // Add or update engineer in real time
+          setUsers((prev) => {
+            const index = prev.findIndex((u) => u.id === incoming.id);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = incoming;
+              return updated;
+            }
+            return [incoming, ...prev];
+          });
+        } else {
+          loadUsers();
+        }
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/users");
+    };
+  }, []);
 
   const handleDelete = async (id) => {
     try {
       await deleteUser(id);
-
-      loadUsers();
+      setUsers((prev) => prev.filter((user) => user.id !== id));
     } catch (error) {
-      console.log(error);
+      console.error("Failed to delete engineer:", error);
     }
   };
 
@@ -57,7 +80,6 @@ function Engineers() {
 
   const handleCreate = () => {
     setEditingUser(null);
-
     setFormData({
       firstName: "",
       lastName: "",
@@ -68,42 +90,37 @@ function Engineers() {
       designation: "",
       role: "IT_ENGINEER",
     });
-
     setShowForm(true);
   };
 
   const handleEdit = (user) => {
     setEditingUser(user);
-
     setFormData({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      mobileNo: user.mobileNo,
+      mobileNo: user.mobileNo || "",
       password: "",
-      department: user.department,
-      designation: user.designation,
+      department: user.department || "IT",
+      designation: user.designation || "",
       role: user.role,
     });
-
     setShowForm(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       if (editingUser) {
-        await (editingUser.id, formData);
+        await updateUser(editingUser.id, formData);
       } else {
         await createUser(formData);
       }
-
       setShowForm(false);
-
       loadUsers();
     } catch (error) {
-      console.log(error);
+      console.error("Error saving engineer:", error);
+      alert("Failed to save engineer details");
     }
   };
 
@@ -115,14 +132,7 @@ function Engineers() {
 
           <button
             onClick={handleCreate}
-            className="
-              bg-red-700
-              text-white
-              px-4
-              py-2
-              rounded
-              hover:bg-red-800
-            "
+            className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800 transition"
           >
             Create Engineer
           </button>
@@ -172,7 +182,6 @@ function Engineers() {
                 value={formData.mobileNo}
                 onChange={handleChange}
                 className="border p-2 rounded"
-                required
               />
 
               {!editingUser && (
@@ -208,14 +217,7 @@ function Engineers() {
               <div className="col-span-2 flex gap-3">
                 <button
                   type="submit"
-                  className="
-                    bg-red-600
-                    text-white
-                    px-4
-                    py-2
-                    rounded
-                    hover:bg-red-800
-                  "
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"
                 >
                   {editingUser ? "Update" : "Create"}
                 </button>
@@ -223,14 +225,7 @@ function Engineers() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="
-                    bg-red-600
-                    text-white
-                    px-4
-                    py-2
-                    rounded
-                    hover:bg-red-800
-                  "
+                  className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
                 >
                   Cancel
                 </button>
@@ -243,7 +238,7 @@ function Engineers() {
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
-                <th className="p-4 text-left">ID</th>
+                <th className="p-4 text-left">SR No</th>
                 <th className="p-4 text-left">Name</th>
                 <th className="p-4 text-left">Email</th>
                 <th className="p-4 text-left">Mobile</th>
@@ -254,59 +249,44 @@ function Engineers() {
             </thead>
 
             <tbody>
-              {users.map((user, index) => (
-                <tr
-                  key={user.id}
-                  className="
-                    border-t
-                    hover:bg-gray-50
-                  "
-                >
-                  <td className="p-4">{index + 1}</td>
-
-                  <td className="p-4">
-                    {user.firstName} {user.lastName}
-                  </td>
-
-                  <td className="p-4">{user.email}</td>
-
-                  <td className="p-4">{user.mobileNo}</td>
-
-                  <td className="p-4">{user.department}</td>
-
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="
-                        bg-red-700
-                        text-white
-                        px-3
-                        py-1
-                        rounded
-                        hover:bg-red-900
-                      "
-                    >
-                      Update
-                    </button>
-                  </td>
-
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="
-                        bg-red-700
-                        text-white
-                        px-3
-                        py-1
-                        rounded
-                        hover:bg-red-900
-                      "
-                    >
-                      Delete
-                    </button>
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="p-6 text-center text-gray-500">
+                    No engineers found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="border-t hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4">{index + 1}</td>
+                    <td className="p-4 font-medium text-gray-900">
+                      {user.firstName} {user.lastName}
+                    </td>
+                    <td className="p-4 text-gray-600">{user.email}</td>
+                    <td className="p-4 text-gray-600">{user.mobileNo || "—"}</td>
+                    <td className="p-4 text-gray-600">{user.department}</td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-sm"
+                      >
+                        Update
+                      </button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="bg-red-700 text-white px-3 py-1 rounded hover:bg-red-900 transition text-sm"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

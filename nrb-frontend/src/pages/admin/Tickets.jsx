@@ -24,28 +24,6 @@ function Tickets() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  useEffect(() => {
-    loadTickets();
-
-    wsService.connect(() => {
-      wsService.subscribe("/topic/tickets", (incomingTicket) => {
-        setTickets((prev) => {
-          const index = prev.findIndex((t) => t.id === incomingTicket.id);
-          if (index !== -1) {
-            const updated = [...prev];
-            updated[index] = incomingTicket;
-            return updated;
-          }
-          return [incomingTicket, ...prev];
-        });
-      });
-    });
-
-    return () => {
-      wsService.unsubscribe("/topic/tickets");
-    };
-  }, []);
-
   const loadTickets = async () => {
     try {
       const response = await getTickets();
@@ -55,6 +33,43 @@ function Tickets() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    loadTickets();
+
+    wsService.connect(() => {
+      wsService.subscribe("/topic/tickets", (incomingTicket) => {
+        // 1. If a user was deleted, refresh all tickets to reflect cascaded deletions & unassignments
+        if (incomingTicket.userDeleted) {
+          loadTickets();
+          return;
+        }
+
+        // 2. If a ticket was deleted, remove it immediately
+        if (incomingTicket.deletedTicketId) {
+          setTickets((prev) => prev.filter((t) => t.id !== incomingTicket.deletedTicketId));
+          return;
+        }
+
+        // 3. Normal ticket create or update
+        if (incomingTicket.id) {
+          setTickets((prev) => {
+            const index = prev.findIndex((t) => t.id === incomingTicket.id);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = incomingTicket;
+              return updated;
+            }
+            return [incomingTicket, ...prev];
+          });
+        }
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+    };
+  }, []);
 
   const handleDelete = async (id) => {
     try {
@@ -196,7 +211,7 @@ function Tickets() {
           </table>
         </div>
 
-        {/* Pagination Bar remains anchored beneath the scrollable table */}
+        {/* Pagination Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-2">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>Rows per page:</span>

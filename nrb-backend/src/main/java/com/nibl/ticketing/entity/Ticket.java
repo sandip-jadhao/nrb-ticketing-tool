@@ -1,9 +1,12 @@
 package com.nibl.ticketing.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nibl.ticketing.enums.Priority;
 import com.nibl.ticketing.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -31,9 +34,13 @@ public class Ticket extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "created_by")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnoreProperties({"createdTickets", "assignedTickets", "password", "authorities"})
     private User createdBy;
 
     @ManyToOne
     @JoinColumn(name = "assigned_to")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JsonIgnoreProperties({"createdTickets", "assignedTickets", "password", "authorities"})
     private User assignedEngineer;
 }

@@ -12,20 +12,6 @@ function AdminDashboard() {
     resolvedTickets: 0,
   });
 
-  useEffect(() => {
-    loadDashboard();
-
-    wsService.connect(() => {
-      wsService.subscribe("/topic/tickets", () => {
-        loadDashboard();
-      });
-    });
-
-    return () => {
-      wsService.unsubscribe("/topic/tickets");
-    };
-  }, []);
-
   const loadDashboard = async () => {
     try {
       const data = await getDashboardData();
@@ -35,6 +21,27 @@ function AdminDashboard() {
       console.error("Failed to load dashboard data:", error);
     }
   };
+
+  useEffect(() => {
+    loadDashboard();
+
+    wsService.connect(() => {
+      // Refresh counters when tickets are created, updated, or deleted
+      wsService.subscribe("/topic/tickets", () => {
+        loadDashboard();
+      });
+
+      // Refresh counters when users or engineers are created, updated, or deleted
+      wsService.subscribe("/topic/users", () => {
+        loadDashboard();
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/tickets");
+      wsService.unsubscribe("/topic/users");
+    };
+  }, []);
 
   return (
     <AdminLayout>

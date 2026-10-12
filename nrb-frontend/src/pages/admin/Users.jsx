@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../layouts/AdminLayout";
-import { getUsers, deleteUser, createUser } from "../../services/adminService";
+import { getUsers, deleteUser, createUser} from "../../services/adminService";
+import { wsService } from "../../services/websocketService";
 
 function Users() {
   const [users, setUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [newUser, setNewUser] = useState({
+  const [editingUser, setEditingUser] = useState(null);
+
+  const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -16,58 +19,106 @@ function Users() {
     role: "USER",
   });
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   const loadUsers = async () => {
     try {
       const response = await getUsers();
       const onlyUsers = response.data.filter((user) => user.role === "USER");
       setUsers(onlyUsers);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to load users:", error);
     }
   };
 
+  useEffect(() => {
+    loadUsers();
+
+    // Subscribe to real-time user events
+    wsService.connect(() => {
+      wsService.subscribe("/topic/users", (incoming) => {
+        if (incoming.deletedUserId) {
+          // Instantly filter out deleted user
+          setUsers((prev) => prev.filter((u) => u.id !== incoming.deletedUserId));
+        } else if (incoming.role === "USER") {
+          // Add or update user in real time
+          setUsers((prev) => {
+            const index = prev.findIndex((u) => u.id === incoming.id);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = incoming;
+              return updated;
+            }
+            return [incoming, ...prev];
+          });
+        } else {
+          loadUsers();
+        }
+      });
+    });
+
+    return () => {
+      wsService.unsubscribe("/topic/users");
+    };
+  }, []);
+
   const handleChange = (e) => {
-    setNewUser({
-      ...newUser,
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleCreateUser = async (e) => {
+  const handleCreate = () => {
+    setEditingUser(null);
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      mobileNo: "",
+      password: "",
+      department: "",
+      designation: "",
+      role: "USER",
+    });
+    setShowForm(true);
+  };
+
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      mobileNo: user.mobileNo || "",
+      password: "",
+      department: user.department || "",
+      designation: user.designation || "",
+      role: user.role || "USER",
+    });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createUser(newUser);
-      loadUsers();
-
+      if (editingUser) {
+        await updateUser(editingUser.id, formData);
+      } else {
+        await createUser(formData);
+      }
       setShowForm(false);
-
-      setNewUser({
-        firstName: "",
-        lastName: "",
-        email: "",
-        mobileNo: "",
-        password: "",
-        department: "",
-        designation: "",
-        role: "USER",
-      });
-
-      alert("User Created Successfully");
+      loadUsers();
     } catch (error) {
-      console.log(error);
+      console.error("Error saving user:", error);
+      alert("Failed to save user details");
     }
   };
-  
+
   const handleDelete = async (id) => {
     try {
       await deleteUser(id);
-      loadUsers();
+      setUsers((prev) => prev.filter((user) => user.id !== id));
     } catch (error) {
-      console.log(error);
+      console.error("Failed to delete user:", error);
     }
   };
 
@@ -78,25 +129,25 @@ function Users() {
           <h1 className="text-1xl font-bold">Users</h1>
 
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-900"
+            onClick={handleCreate}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-900 transition"
           >
             Create User
           </button>
         </div>
+
         {showForm && (
           <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-xl font-bold mb-4">Create User</h2>
+            <h2 className="text-xl font-bold mb-4">
+              {editingUser ? "Update User" : "Create User"}
+            </h2>
 
-            <form
-              onSubmit={handleCreateUser}
-              className="grid grid-cols-2 gap-4"
-            >
+            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <input
                 type="text"
                 name="firstName"
                 placeholder="First Name"
-                value={newUser.firstName}
+                value={formData.firstName}
                 onChange={handleChange}
                 className="border p-2 rounded"
                 required
@@ -106,7 +157,7 @@ function Users() {
                 type="text"
                 name="lastName"
                 placeholder="Last Name"
-                value={newUser.lastName}
+                value={formData.lastName}
                 onChange={handleChange}
                 className="border p-2 rounded"
                 required
@@ -116,7 +167,7 @@ function Users() {
                 type="email"
                 name="email"
                 placeholder="Email"
-                value={newUser.email}
+                value={formData.email}
                 onChange={handleChange}
                 className="border p-2 rounded"
                 required
@@ -126,26 +177,28 @@ function Users() {
                 type="text"
                 name="mobileNo"
                 placeholder="Mobile Number"
-                value={newUser.mobileNo}
+                value={formData.mobileNo}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={newUser.password}
-                onChange={handleChange}
-                className="border p-2 rounded"
-                required
-              />
+              {!editingUser && (
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                  required
+                />
+              )}
 
               <input
                 type="text"
                 name="department"
                 placeholder="Department"
-                value={newUser.department}
+                value={formData.department}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
@@ -154,14 +207,14 @@ function Users() {
                 type="text"
                 name="designation"
                 placeholder="Designation"
-                value={newUser.designation}
+                value={formData.designation}
                 onChange={handleChange}
                 className="border p-2 rounded"
               />
 
               <select
                 name="role"
-                value={newUser.role}
+                value={formData.role}
                 onChange={handleChange}
                 className="border p-2 rounded"
               >
@@ -172,15 +225,15 @@ function Users() {
               <div className="col-span-2 flex gap-2">
                 <button
                   type="submit"
-                  className="bg-red-600 hover:bg-red-900 text-white px-4 py-2 rounded"
+                  className="bg-red-600 hover:bg-red-900 text-white px-4 py-2 rounded transition"
                 >
-                  Save
+                  {editingUser ? "Update" : "Save"}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="bg-red-600 hover:bg-red-900 text-white border-2 border-white px-4 py-2 rounded"
+                  className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
                 >
                   Cancel
                 </button>
@@ -188,75 +241,57 @@ function Users() {
             </form>
           </div>
         )}
+
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-4 text-left">SR No</th>
-
                 <th className="p-4 text-left">Name</th>
-
                 <th className="p-4 text-left">Email</th>
-
                 <th className="p-4 text-left">Department</th>
-
                 <th className="p-4 text-center">Update</th>
-
                 <th className="p-4 text-center">Delete</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
-                <tr
-                  key={index + 1}
-                  className="
-                    border-t
-                    hover:bg-gray-50
-                  "
-                >
-                  <td className="p-4">{index + 1}</td>
-
-                  <td className="p-4">
-                    {user.firstName} {user.lastName}
-                  </td>
-
-                  <td className="p-4">{user.email}</td>
-
-                  <td className="p-4">{user.department}</td>
-
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => handleUpdate(user.id)}
-                      className="
-                        bg-red-700
-                        text-white
-                        px-3
-                        py-1
-                        rounded
-                        hover:bg-red-800
-                      "
-                    >
-                      Update
-                    </button>
-                  </td>
-
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="
-                        bg-red-700
-                        text-white
-                        px-3
-                        py-1
-                        rounded
-                        hover:bg-red-800
-                      "
-                    >
-                      Delete
-                    </button>
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-gray-500">
+                    No users found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="border-t hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="p-4">{index + 1}</td>
+                    <td className="p-4 font-medium text-gray-900">
+                      {user.firstName} {user.lastName}
+                    </td>
+                    <td className="p-4 text-gray-600">{user.email}</td>
+                    <td className="p-4 text-gray-600">{user.department}</td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-sm"
+                      >
+                        Update
+                      </button>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="bg-red-700 text-white px-3 py-1 rounded hover:bg-red-900 transition text-sm"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
