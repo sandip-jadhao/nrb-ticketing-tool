@@ -1,11 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
 import EngineerLayout from "../../layouts/EngineerLayout";
-import {
-  getEngineerTickets,
-  updateTicketStatus,
-} from "../../services/engineerService";
+import { getEngineerTickets,updateTicketStatus,} from "../../services/engineerService";
 import { wsService } from "../../services/websocketService";
 import { formatDateTime } from "../../utils/dateTime";
+import { viewAttachment, downloadAttachment } from "../../services/ticketService";
 
 const STATUS_WEIGHTS = {
   ASSIGNED: 0,
@@ -112,6 +110,7 @@ function AssignedTickets() {
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Title</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Priority</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Created By</th>
+                <th className="p-3 text-center font-bold text-black">Attachment</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Current Status</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Update Status</th>
               </tr>
@@ -159,6 +158,31 @@ function AssignedTickets() {
 
                     <td className="p-4">
                       {ticket.createdBy?.firstName} {ticket.createdBy?.lastName}
+                    </td>
+
+                    <td className="p-3 text-center">
+                      {ticket.attachmentPath ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => viewAttachment(ticket.attachmentPath)}
+                                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition"
+                                title="View attachment in browser"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadAttachment(ticket.attachmentPath)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition"
+                            title="Download file"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">—</span>
+                      )}
                     </td>
 
                     <td className="p-4">

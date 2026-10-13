@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                           .requestMatchers(
-                                "/api/auth/**","/ws-ticketing/**")
+                                "/api/auth/**","/ws-ticketing/**","/api/tickets/attachments/**")
                         .permitAll()
                         .requestMatchers(
                                 "/api/admin/**")

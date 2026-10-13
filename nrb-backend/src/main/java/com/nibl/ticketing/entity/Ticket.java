@@ -29,6 +29,9 @@ public class Ticket extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
+    
+    @Column(name = "attachment_path")
+    private String attachmentPath;
 
     private LocalDateTime resolvedAt;
 

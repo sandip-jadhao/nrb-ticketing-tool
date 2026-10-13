@@ -3,6 +3,7 @@ import AdminLayout from "../../layouts/AdminLayout";
 import { getTickets, deleteTicket } from "../../services/adminService";
 import { wsService } from "../../services/websocketService";
 import { formatDateTime } from "../../utils/dateTime";
+import { viewAttachment, downloadAttachment } from "../../services/ticketService";
 
 const STATUS_WEIGHTS = {
   OPEN: 0,
@@ -129,6 +130,7 @@ function Tickets() {
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Resolved At</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Created By</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Assigned Engineer</th>
+                <th className="p-3 text-center font-bold text-black">Attachment</th>
                 <th className="p-3 text-center bg-gray-100 font-bold text-black">Action</th>
               </tr>
             </thead>
@@ -194,6 +196,30 @@ function Tickets() {
                         `${ticket.assignedEngineer?.firstName} ${ticket.assignedEngineer?.lastName}`
                       ) : (
                         <span className="text-red-500 font-medium">Unassigned</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {ticket.attachmentPath ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => viewAttachment(ticket.attachmentPath)}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition"
+                            title="View attachment in browser"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadAttachment(ticket.attachmentPath)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition"
+                            title="Download file"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs italic">—</span>
                       )}
                     </td>
                     <td className="p-3 text-center">

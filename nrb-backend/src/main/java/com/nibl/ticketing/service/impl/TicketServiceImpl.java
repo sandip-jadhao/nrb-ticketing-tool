@@ -8,11 +8,14 @@ import com.nibl.ticketing.repository.TicketRepository;
 import com.nibl.ticketing.repository.UserRepository;
 import com.nibl.ticketing.service.EmailService;
 import com.nibl.ticketing.service.TicketService;
+import com.nibl.ticketing.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -28,36 +31,44 @@ public class TicketServiceImpl implements TicketService {
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
     private static int currentEngineer = 0;
+    private final FileStorageService fileStorageService;
 
     @Override
     public Ticket createTicket(Ticket ticket) {
-        User loggedUser = getLoggedInUser();
-        ticket.setCreatedBy(loggedUser);
-
-        // Get all engineers for round-robin assignment
-        List<User> engineers = userRepository.findByRole(Role.IT_ENGINEER);
-
-        if (!engineers.isEmpty()) {
-            User engineer = engineers.get(currentEngineer);
-            ticket.setAssignedEngineer(engineer);
-            ticket.setStatus(TicketStatus.ASSIGNED);
-
-            currentEngineer = (currentEngineer + 1) % engineers.size();
-        } else {
-            ticket.setStatus(TicketStatus.OPEN);
-        }
-
-        Ticket savedTicket = ticketRepository.save(ticket);
-
-        // 1. Send Email to the assigned engineer
-        if (savedTicket.getAssignedEngineer() != null) {
-            emailService.sendTicketAssignedToEngineer(savedTicket, savedTicket.getAssignedEngineer());
-        }
-
-        // Broadcast to WebSocket topic
-        messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
-        return savedTicket;
+        return createTicket(ticket, null);
     }
+
+   @Override
+    public Ticket createTicket(Ticket ticket, MultipartFile file) {
+    User loggedUser = getLoggedInUser();
+    ticket.setCreatedBy(loggedUser);
+
+     if (file != null && !file.isEmpty()) {
+        String savedFileName = fileStorageService.storeFile(file);
+        ticket.setAttachmentPath(savedFileName);
+    }
+
+    
+    List<User> engineers = userRepository.findByRole(Role.IT_ENGINEER);
+    if (!engineers.isEmpty()) {
+        User engineer = engineers.get(currentEngineer);
+        ticket.setAssignedEngineer(engineer);
+        ticket.setStatus(TicketStatus.ASSIGNED);
+        currentEngineer = (currentEngineer + 1) % engineers.size();
+    } else {
+        ticket.setStatus(TicketStatus.OPEN);
+    }
+
+    Ticket savedTicket = ticketRepository.save(ticket);
+
+    
+    if (savedTicket.getAssignedEngineer() != null) {
+        emailService.sendTicketAssignedToEngineer(savedTicket, savedTicket.getAssignedEngineer());
+    }
+
+    messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
+    return savedTicket;
+}
 
     @Override
     public Ticket assignTicket(Long ticketId, Long engineerId) {
@@ -69,7 +80,7 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // 2. Send Email to the newly assigned engineer
+        
         if (savedTicket.getAssignedEngineer() != null) {
             emailService.sendTicketAssignedToEngineer(savedTicket, savedTicket.getAssignedEngineer());
         }
