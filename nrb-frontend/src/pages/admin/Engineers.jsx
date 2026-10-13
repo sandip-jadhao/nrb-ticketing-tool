@@ -225,7 +225,7 @@ function Engineers() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded transition"
+                  className="bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded transition"
                 >
                   Cancel
                 </button>
@@ -271,7 +271,7 @@ function Engineers() {
                     <td className="p-4 text-center">
                       <button
                         onClick={() => handleEdit(user)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-800 transition text-sm"
+                        className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-800 transition text-sm"
                       >
                         Update
                       </button>
