@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const role = localStorage.getItem("role") || "Admin";
@@ -12,6 +13,13 @@ function Navbar() {
     localStorage.clear();
     window.location.href = "/login";
   };
+
+  const profileRoute = (() => {
+    const userRole = (role || localStorage.getItem("role") || "").toUpperCase();
+    if (userRole === "ADMIN") return "/admin/Adminprofile"; // or "/admin/AdminProfile" depending on your App.jsx route
+    if (userRole === "IT_ENGINEER" || userRole === "ENGINEER") return "/engineer/EngineerProfile";
+    return "/user/profile";
+  })();
 
   return (
     <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-end px-8 gap-3 shrink-0 shadow-sm">
@@ -35,20 +43,26 @@ function Navbar() {
         </span>
       </div>
 
-      {/* User Avatar & Name */}
-      <div className="flex items-center gap-3 px-3 py-1.5 rounded-lg  border-transparent hover:border-red-200 hover:bg-red-50/80 cursor-pointer transition-all duration-300 ease-in-out">
-        <div className="w-12 h-12 rounded-full bg-red-50 text-[#9B1317] font-bold flex items-center justify-center text-s shadow-inner">
-            {initials}
-        </div>
-          <div className="flex flex-col text-left leading-tight">
-            <span className="text-sm font-semibold text-gray-800">
-              {firstName} {lastName}
-            </span>
-            <span className="text-[11px] text-gray-400 capitalize">
-              {role.toLowerCase()}
-            </span>
-          </div>
-      </div>
+     <Link
+  to={profileRoute}
+  title="View Profile"
+  className="flex items-center gap-3.5 bg-[#FAF6F6] hover:bg-[#F3EBEB] px-4 py-2 rounded-2xl border border-red-100/60 transition-all duration-200 cursor-pointer group select-none shadow-sm hover:shadow"
+>
+  {/* Circular Avatar Badge */}
+  <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-[#9B1317] font-extrabold text-sm tracking-tight border border-gray-100 group-hover:scale-105 transition-transform shrink-0">
+    {initials}
+  </div>
+
+  {/* Name and Role text */}
+  <div className="flex flex-col text-left leading-tight pr-1">
+    <span className="text-sm font-bold text-gray-800 group-hover:text-[#9B1317] transition-colors">
+      {firstName} {lastName}
+    </span>
+    <span className="text-xs text-gray-400 capitalize group-hover:text-[#9B1317]/80 transition-colors">
+      {role ? role.toLowerCase().replace("_", " ") : "user"}
+    </span>
+  </div>
+</Link>
       {/* Action Buttons */}
       <button
         type="button"

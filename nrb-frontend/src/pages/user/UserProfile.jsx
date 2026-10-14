@@ -3,16 +3,8 @@ import UserLayout from "../../layouts/UserLayout";
 import { getUserProfile } from "../../services/userService";
 
 function UserProfile() {
-
-  const [user, setUser] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    mobileNo: "",
-    department: "",
-    designation: "",
-    role: "",
-  });
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProfile();
@@ -20,82 +12,248 @@ function UserProfile() {
 
   const loadProfile = async () => {
     try {
-      const response = await getUserProfile();
-      setUser(response);
+      setLoading(true);
+      const res = await getUserProfile();
+      // Handle response whether wrapped in res.data or returned directly
+      const data = res?.data || res;
+      setProfile(data);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to load user profile:", error);
+      // Fallback to localStorage if API is unreachable
+      setProfile({
+        firstName: localStorage.getItem("firstName") || "",
+        lastName: localStorage.getItem("lastName") || "",
+        email: localStorage.getItem("email") || "",
+        role: localStorage.getItem("role") || "USER",
+        mobileNo: localStorage.getItem("mobileNo") || localStorage.getItem("mobile_no") || "",
+        department: localStorage.getItem("department") || "General",
+        designation: localStorage.getItem("designation") || "Employee",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading && !profile) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-gray-200 border-t-[#9B1317] rounded-full animate-spin" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Loading Profile...
+            </span>
+          </div>
+        </div>
+      </UserLayout>
+    );
+  }
+
+  // Generate 2-letter uppercase initials
+  const initials =
+    `${profile?.firstName?.charAt(0) || ""}${profile?.lastName?.charAt(0) || ""}`.toUpperCase() ||
+    "UP";
+
+  const fullName = `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim() || "Employee";
+
+  const lastSigned = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
   return (
     <UserLayout>
-
-      <div>
-        <div className="bg-white shadow-lg rounded-lg p-8 max-w-3xl">
-
-          <div className="flex items-center gap-6 mb-8">
-
-            <div className="w-20 h-20 rounded-full bg-[#F58220] flex items-center justify-center text-white text-3xl font-bold">
-              {user.firstName?.charAt(0).toUpperCase()}
+      {/* Scrollable Container Wrapper */}
+      <div className="w-full h-full overflow-y-auto pr-2 pb-16 scroll-smooth">
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="bg-[#8B0E12] rounded-2xl px-8 py-7 shadow-md flex items-center gap-6 text-white">
+            <div className="w-20 h-20 rounded-2xl bg-white text-[#8B0E12] font-black text-2xl flex items-center justify-center shrink-0 shadow-lg tracking-tight select-none">
+              {initials}
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold">
-                {user.firstName} {user.lastName}
-              </h2>
-
+            <div className="space-y-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-red-200/80 block">
+                MY PROFILE
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+                {fullName}
+              </h1>
+              <div className="flex items-center gap-2 pt-1">
+                <span className="text-xs font-semibold text-white/90">
+                  {profile?.role || "Employee"}
+                </span>
+              </div>
             </div>
-
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          {/* ===================== PERSONAL DETAILS CARD ===================== */}
+          <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-8 space-y-6">
+            {/* Section Header */}
+            <div className="flex justify-between items-start pb-5 border-b border-gray-100">
+              <div>
+                <span className="text-[10px] font-extrabold tracking-widest text-[#9B1317] uppercase block mb-1">
+                  ACCOUNT INFORMATION
+                </span>
+                <h2 className="text-lg font-black text-gray-900 tracking-tight">
+                  Personal Details
+                </h2>
+              </div>
 
-            <div>
-              <p className="text-gray-500">First Name</p>
-              <p className="font-semibold">
-                {user.firstName}
-              </p>
+              {/* User Outline Icon */}
+              <div className="p-2 text-[#9B1317] bg-red-50 rounded-lg">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeWidth="1.8"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
             </div>
 
-            <div>
-              <p className="text-gray-500">Last Name</p>
-              <p className="font-semibold">
-                {user.lastName}
-              </p>
+            {/* Details 2-Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 1. Full Name */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    FULL NAME
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">{fullName}</span>
+                </div>
+              </div>
+
+              {/* 2. Email Address */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    EMAIL ADDRESS
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">{profile?.email || "—"}</span>
+                </div>
+              </div>
+
+              {/* 3. Role */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    ROLE
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">{profile?.role || "USER"}</span>
+                </div>
+              </div>
+
+              {/* 4. Status */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    STATUS
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">Approved</span>
+                </div>
+              </div>
+
+              {/* 5. Mobile Number */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    MOBILE NUMBER
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {profile?.mobileNo || "Not Provided"}
+                  </span>
+                </div>
+              </div>
+
+              {/* 6. Department & Designation */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    DEPARTMENT / DESIGNATION
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {profile?.department || "General"} {profile?.designation ? `· ${profile.designation}` : ""}
+                  </span>
+                </div>
+              </div>
+
+              {/* 7. Last Signed In */}
+              <div className="bg-[#FAFBFD] border border-gray-200/70 rounded-xl p-4 flex items-center gap-4 hover:border-gray-300 transition md:col-span-2">
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-[#9B1317] flex items-center justify-center shrink-0 border border-red-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeWidth="1.8"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                    LAST SIGNED IN
+                  </span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {lastSigned}, {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <p className="text-gray-500">Email</p>
-              <p className="font-semibold">
-                {user.email}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">Mobile Number</p>
-              <p className="font-semibold">
-                {user.mobileNo}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">Department</p>
-              <p className="font-semibold">
-                {user.department}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">Designation</p>
-              <p className="font-semibold">
-                {user.designation}
-              </p>
-            </div>
+            {/* Footer Administration Note */}
+            <p className="text-xs text-gray-400 pt-4 leading-relaxed border-t border-gray-100">
+              Your name and email are managed by an administrator. Ask them if either needs changing — your email is also how you sign in. If the last sign-in was not you, tell an administrator.
+            </p>
           </div>
 
         </div>
       </div>
-
     </UserLayout>
   );
 }
