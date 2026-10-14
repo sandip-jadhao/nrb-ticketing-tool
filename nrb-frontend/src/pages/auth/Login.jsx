@@ -17,27 +17,35 @@ function Login() {
     try {
       setLoading(true);
       setError("");
+
       const response = await login({ email, password });
+      
+      const data = response.data;
+      console.log("👉 RAW BACKEND RESPONSE:", data);
 
-      const token = response.data.token;
-      const role = response.data.role;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("firstName", data.firstName || "");
+      localStorage.setItem("lastName", data.lastName || "");
+      localStorage.setItem("email", data.email || "");
+      localStorage.setItem("mobileNo", data.mobileNo || "");
+      localStorage.setItem("department", data.department || "IT");
+      localStorage.setItem("designation", data.designation || "");
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-      localStorage.setItem("firstName", response.data.firstName);
-      localStorage.setItem("lastName", response.data.lastName);
-      localStorage.setItem("email", response.data.email);
-
-      if (role === "ADMIN") {
+      if (data.role === "ADMIN") {
         navigate("/admin/dashboard");
-      } else if (role === "IT_ENGINEER") {
+      } else if (data.role === "IT_ENGINEER") {
         navigate("/engineer/dashboard");
       } else {
         navigate("/user/dashboard");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Invalid Email or Password");
+    } catch (err) {
+      console.error("Login Error:", err);
+      if (err.response) {
+        alert(err.response.data?.message || "Invalid Email or Password");
+      } else {
+        alert(err.message || "An unexpected error occurred during login.");
+      }
     } finally {
       setLoading(false);
     }

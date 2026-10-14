@@ -13,4 +13,7 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private String mobileNo;
+    private String department;
+    private String designation;
 }

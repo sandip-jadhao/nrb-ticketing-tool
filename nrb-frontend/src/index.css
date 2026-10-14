@@ -5,3 +5,20 @@
 body {
   @apply bg-slate-100;
 }
+
+@keyframes logoWaveLight {
+  0% {
+    transform: translateX(-160%) skewX(-25deg);
+  }
+  48% {
+    transform: translateX(260%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(260%) skewX(-25deg);
+  }
+}
+
+.animate-wave-light {
+  /* Total cycle: 5.8s */
+  animation: logoWaveLight 5.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

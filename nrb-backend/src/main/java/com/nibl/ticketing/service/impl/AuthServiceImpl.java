@@ -1,7 +1,8 @@
 package com.nibl.ticketing.service.impl;
 
 import com.nibl.ticketing.dto.LoginRequest;
-import com.nibl.ticketing.dto.LoginResponse;import com.nibl.ticketing.dto.RegisterRequest;
+import com.nibl.ticketing.dto.LoginResponse;
+import com.nibl.ticketing.dto.RegisterRequest;
 import com.nibl.ticketing.entity.User;
 import com.nibl.ticketing.repository.UserRepository;
 import com.nibl.ticketing.security.JwtService;
@@ -49,19 +50,20 @@ public class AuthServiceImpl implements AuthService {
                 request.getPassword(),
                 user.getPassword())) {
 
-            throw new RuntimeException(
-                    "Invalid Password");
+            throw new RuntimeException("Invalid Password");
         }
 
-        String token =
-                jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
 
         return new LoginResponse(
                 token,
                 user.getRole().name(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getEmail()
+                user.getEmail(),
+                user.getMobileNo(),
+                user.getDepartment(),
+                user.getDesignation()
         );
     }
 }
