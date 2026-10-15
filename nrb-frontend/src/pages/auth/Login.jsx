@@ -21,8 +21,6 @@ function Login() {
       const response = await login({ email, password });
       
       const data = response.data;
-      console.log("👉 RAW BACKEND RESPONSE:", data);
-
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
       localStorage.setItem("firstName", data.firstName || "");

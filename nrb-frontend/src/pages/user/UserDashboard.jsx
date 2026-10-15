@@ -76,9 +76,7 @@ function UserDashboard() {
         {/* ===================== NPD HEADER AREA ===================== */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">
-              DASHBOARD - USER WORKSPACE
-            </h1>
+           <h1 className="text-1xl font-bold">User</h1>
             <p className="text-xs text-gray-500 mt-1">{todayDate}</p>
           </div>
 
