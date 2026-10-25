@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import EngineerLayout from "../../layouts/EngineerLayout";
-import { getEngineerTickets,updateTicketStatus,} from "../../services/engineerService";
+import { getEngineerTickets, updateTicketStatus } from "../../services/engineerService";
 import { wsService } from "../../services/websocketService";
 import { formatDateTime } from "../../utils/dateTime";
 import { viewAttachment, downloadAttachment } from "../../services/ticketService";
+import TicketChatModal from "../../components/TicketChatModal";
 
 const STATUS_WEIGHTS = {
   ASSIGNED: 0,
@@ -21,6 +22,7 @@ const PRIORITY_WEIGHTS = {
 
 function AssignedTickets() {
   const [tickets, setTickets] = useState([]);
+  const [chatTicket, setChatTicket] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
@@ -43,7 +45,7 @@ function AssignedTickets() {
       const response = await getEngineerTickets();
       setTickets(response.data || []);
     } catch (error) {
-      console.log(error);
+      console.error("Failed to load engineer tickets:", error);
     }
   };
 
@@ -55,7 +57,7 @@ function AssignedTickets() {
         prev.map((t) => (t.id === id ? { ...t, status } : t))
       );
     } catch (error) {
-      console.log(error);
+      console.error("Failed to update status:", error);
       alert("Unable to update ticket status");
     }
   };
@@ -95,7 +97,7 @@ function AssignedTickets() {
     <EngineerLayout>
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-1xl font-bold text-gray-800">Assigned Tickets</h1>
+          <h1 className="text-xl font-bold text-gray-800">Assigned Tickets</h1>
           <span className="text-sm text-gray-500 font-medium">
             Total Assigned: {tickets.length.toLocaleString()}
           </span>
@@ -110,7 +112,8 @@ function AssignedTickets() {
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Title</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Priority</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Created By</th>
-                <th className="p-3 text-center font-bold text-black">Attachment</th>
+                <th className="p-3 text-center bg-gray-100 font-bold text-black">Attachment</th>
+                <th className="p-3 text-center bg-gray-100 font-bold text-black">Chat</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Current Status</th>
                 <th className="p-3 text-left bg-gray-100 font-bold text-black">Update Status</th>
               </tr>
@@ -120,7 +123,7 @@ function AssignedTickets() {
               {paginatedTickets.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="9"
                     className="text-center p-6 text-gray-500"
                   >
                     No Assigned Tickets
@@ -135,14 +138,14 @@ function AssignedTickets() {
                     <td className="p-3 text-gray-600">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
-                    <td className="p-3 whitespace-nowrap">
+                    <td className="p-3 whitespace-nowrap text-sm text-gray-700">
                       {ticket.createdAt ? formatDateTime(ticket.createdAt) : "N/A"}
                     </td>
                     <td className="p-3 font-medium text-gray-800">{ticket.title}</td>
 
                     <td className="p-3">
                       <span
-                        className={`px-2 py-1 rounded text-white text-sm font-medium ${
+                        className={`px-2 py-1 rounded text-white text-xs font-semibold ${
                           ticket.priority === "LOW"
                             ? "bg-green-500"
                             : ticket.priority === "MEDIUM"
@@ -156,25 +159,25 @@ function AssignedTickets() {
                       </span>
                     </td>
 
-                    <td className="p-4">
+                    <td className="p-3 text-sm text-gray-700">
                       {ticket.createdBy?.firstName} {ticket.createdBy?.lastName}
                     </td>
 
                     <td className="p-3 text-center">
                       {ticket.attachmentPath ? (
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => viewAttachment(ticket.attachmentPath)}
-                                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition"
-                                title="View attachment in browser"
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => viewAttachment(ticket.attachmentPath)}
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition cursor-pointer"
+                            title="View attachment in browser"
                           >
                             View
                           </button>
                           <button
                             type="button"
                             onClick={() => downloadAttachment(ticket.attachmentPath)}
-                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition"
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition cursor-pointer"
                             title="Download file"
                           >
                             Download
@@ -185,7 +188,33 @@ function AssignedTickets() {
                       )}
                     </td>
 
-                    <td className="p-4">
+                    {/* Chat Column */}
+                    <td className="p-3 text-center">
+                      {ticket.status === "RESOLVED" ? (
+                        <span className="text-[11px] text-gray-400 italic font-semibold">
+                          Purged
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setChatTicket(ticket)}
+                          className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-[#9B1317] border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer"
+                          title="Discuss with User"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                            />
+                          </svg>
+                          <span>Discuss</span>
+                        </button>
+                      )}
+                    </td>
+
+                    <td className="p-3">
                       <span
                         className={`px-2 py-1 rounded text-xs font-semibold ${
                           ticket.status === "RESOLVED"
@@ -201,13 +230,13 @@ function AssignedTickets() {
                       </span>
                     </td>
 
-                    <td className="p-4 text-center">
+                    <td className="p-3 text-center">
                       <select
                         value={ticket.status}
                         onChange={(e) =>
                           handleStatusChange(ticket.id, e.target.value)
                         }
-                        className="border rounded px-3 py-2 bg-white"
+                        className="border border-gray-300 rounded px-2.5 py-1.5 bg-white text-xs font-medium cursor-pointer focus:outline-none focus:border-[#9B1317]"
                       >
                         <option value="ASSIGNED">ASSIGNED</option>
                         <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -232,7 +261,7 @@ function AssignedTickets() {
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded px-2 py-1 bg-white"
+              className="border border-gray-300 rounded px-2 py-1 bg-white cursor-pointer"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -249,7 +278,7 @@ function AssignedTickets() {
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Previous
             </button>
@@ -259,13 +288,21 @@ function AssignedTickets() {
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Next
             </button>
           </div>
         </div>
       </div>
+
+      {/* Coordination Chat Modal Mounted Here */}
+      {chatTicket && (
+        <TicketChatModal
+          ticket={chatTicket}
+          onClose={() => setChatTicket(null)}
+        />
+      )}
     </EngineerLayout>
   );
 }

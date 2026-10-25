@@ -4,12 +4,14 @@ import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.entity.User;
 import com.nibl.ticketing.enums.Role;
 import com.nibl.ticketing.enums.TicketStatus;
+import com.nibl.ticketing.repository.TicketMessageRepository;
 import com.nibl.ticketing.repository.TicketRepository;
 import com.nibl.ticketing.repository.UserRepository;
 import com.nibl.ticketing.service.EmailService;
 import com.nibl.ticketing.service.FileStorageService;
 import com.nibl.ticketing.service.TicketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,12 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final TicketMessageRepository ticketMessageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
     private static int currentEngineer = 0;
@@ -59,6 +63,22 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
+        // Console Log Output
+        String creatorName = loggedUser.getFirstName() + " " + loggedUser.getLastName();
+        String engineerDetails = savedTicket.getAssignedEngineer() != null
+                ? savedTicket.getAssignedEngineer().getFirstName() + " " + savedTicket.getAssignedEngineer().getLastName()
+                + " (" + savedTicket.getAssignedEngineer().getEmail() + ")"
+                : "UNASSIGNED (OPEN)";
+
+        System.out.println("\n==================== [TICKET CREATED & ASSIGNED] ====================");
+        System.out.println("Ticket ID     : #" + savedTicket.getId());
+        System.out.println("Title         : " + savedTicket.getTitle());
+        System.out.println("Created By    : " + creatorName + " (" + loggedUser.getEmail() + ")");
+        System.out.println("Department    : " + loggedUser.getDepartment());
+        System.out.println("Assigned To   : " + engineerDetails);
+        System.out.println("Initial Status: " + savedTicket.getStatus());
+        System.out.println("====================================================================\n");
+
         if (savedTicket.getAssignedEngineer() != null) {
             emailService.sendTicketAssignedToEngineer(savedTicket, savedTicket.getAssignedEngineer());
         }
@@ -79,6 +99,13 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
+        User currentOperator = getLoggedInUser();
+        System.out.println("\n==================== [TICKET REASSIGNED] ====================");
+        System.out.println("Ticket ID    : #" + savedTicket.getId());
+        System.out.println("Reassigned By: " + currentOperator.getFirstName() + " " + currentOperator.getLastName() + " (" + currentOperator.getEmail() + ")");
+        System.out.println("New Engineer : " + engineer.getFirstName() + " " + engineer.getLastName() + " (" + engineer.getEmail() + ")");
+        System.out.println("=============================================================\n");
+
         if (savedTicket.getAssignedEngineer() != null) {
             emailService.sendTicketAssignedToEngineer(savedTicket, savedTicket.getAssignedEngineer());
         }
@@ -96,13 +123,34 @@ public class TicketServiceImpl implements TicketService {
 
         if (status == TicketStatus.RESOLVED) {
             ticket.setResolvedAt(LocalDateTime.now());
+            // Delete messages when resolved
+            ticketMessageRepository.deleteByTicketId(ticketId);
+            log.info("Chat messages purged for resolved Ticket #{}", ticketId);
         } else {
             ticket.setResolvedAt(null);
         }
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // Send Email to the user when ticket is RESOLVED or REJECTED
+        // Console Log for Resolution
+        if (status == TicketStatus.RESOLVED) {
+            User resolver = getLoggedInUser();
+            String resolverName = resolver.getFirstName() + " " + resolver.getLastName();
+            String creatorName = savedTicket.getCreatedBy() != null
+                    ? savedTicket.getCreatedBy().getFirstName() + " " + savedTicket.getCreatedBy().getLastName()
+                    + " (" + savedTicket.getCreatedBy().getEmail() + ")"
+                    : "Unknown User";
+
+            System.out.println("\n==================== [TICKET RESOLVED] ====================");
+            System.out.println("Ticket ID     : #" + savedTicket.getId());
+            System.out.println("Title         : " + savedTicket.getTitle());
+            System.out.println("Resolved By   : " + resolverName + " (" + resolver.getEmail() + ") [Role: " + resolver.getRole() + "]");
+            System.out.println("Raised By     : " + creatorName);
+            System.out.println("Resolved At   : " + savedTicket.getResolvedAt());
+            System.out.println("===========================================================\n");
+        }
+
+        // Email notifications on completion / rejection
         if (status == TicketStatus.RESOLVED || status == TicketStatus.REJECTED) {
             if (savedTicket.getCreatedBy() != null) {
                 emailService.sendTicketStatusUpdateToUser(
@@ -113,7 +161,10 @@ public class TicketServiceImpl implements TicketService {
             }
         }
 
+        // WebSocket notification
         messagingTemplate.convertAndSend("/topic/tickets", savedTicket);
+
+        // Single return statement at the very end
         return savedTicket;
     }
 
@@ -131,7 +182,6 @@ public class TicketServiceImpl implements TicketService {
     public void deleteTicket(Long id) {
         ticketRepository.deleteById(id);
 
-        // Broadcast deletion to update frontend tables instantly
         Map<String, Object> deleteEvent = new HashMap<>();
         deleteEvent.put("deletedTicketId", id);
         messagingTemplate.convertAndSend("/topic/tickets", deleteEvent);
