@@ -4,6 +4,7 @@ import { getTickets, deleteTicket } from "../../services/adminService";
 import { wsService } from "../../services/websocketService";
 import { formatDateTime } from "../../utils/dateTime";
 import { viewAttachment, downloadAttachment } from "../../services/ticketService";
+import TicketChatModal from "../../components/TicketChatModal";
 
 const STATUS_WEIGHTS = {
   OPEN: 0,
@@ -22,14 +23,15 @@ const PRIORITY_WEIGHTS = {
 
 function Tickets() {
   const [tickets, setTickets] = useState([]);
+  const [chatTicket, setChatTicket] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [unreadSet, setUnreadSet] = useState(new Set());
 
   const loadTickets = async () => {
     try {
       const response = await getTickets();
       setTickets(response.data || []);
-      console.log("Tickets Data:", response.data);
     } catch (error) {
       console.log(error);
     }
@@ -40,19 +42,16 @@ function Tickets() {
 
     wsService.connect(() => {
       wsService.subscribe("/topic/tickets", (incomingTicket) => {
-        // 1. If a user was deleted, refresh all tickets to reflect cascaded deletions & unassignments
         if (incomingTicket.userDeleted) {
           loadTickets();
           return;
         }
 
-        // 2. If a ticket was deleted, remove it immediately
         if (incomingTicket.deletedTicketId) {
           setTickets((prev) => prev.filter((t) => t.id !== incomingTicket.deletedTicketId));
           return;
         }
 
-        // 3. Normal ticket create or update
         if (incomingTicket.id) {
           setTickets((prev) => {
             const index = prev.findIndex((t) => t.id === incomingTicket.id);
@@ -71,6 +70,40 @@ function Tickets() {
       wsService.unsubscribe("/topic/tickets");
     };
   }, []);
+
+  // Listen to live chat message topics for all loaded tickets to trigger unread indicators
+  useEffect(() => {
+    if (tickets.length === 0) return;
+
+    wsService.connect(() => {
+      tickets.forEach((ticket) => {
+        if (ticket.status !== "RESOLVED") {
+          wsService.subscribe(`/topic/ticket-messages/${ticket.id}`, () => {
+            // If the chat modal for this ticket is NOT currently open, mark as unread
+            if (chatTicket?.id !== ticket.id) {
+              setUnreadSet((prev) => new Set(prev).add(ticket.id));
+            }
+          });
+        }
+      });
+    });
+
+    return () => {
+      tickets.forEach((ticket) => {
+        wsService.unsubscribe(`/topic/ticket-messages/${ticket.id}`);
+      });
+    };
+  }, [tickets, chatTicket]);
+
+  const handleOpenChat = (ticket) => {
+    setChatTicket(ticket);
+    // Clear unread badge when opening chat
+    setUnreadSet((prev) => {
+      const next = new Set(prev);
+      next.delete(ticket.id);
+      return next;
+    });
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -111,7 +144,7 @@ function Tickets() {
     <AdminLayout>
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-1xl font-bold text-gray-800">Tickets</h1>
+          <h1 className="text-xl font-bold text-gray-800">Tickets</h1>
           <span className="text-sm text-gray-500 font-medium">
             Total Tickets: {tickets.length.toLocaleString()}
           </span>
@@ -122,23 +155,24 @@ function Tickets() {
           <table className="w-full table-auto border-collapse">
             <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">S.N.</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Title</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Created At</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Priority</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Status</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Resolved At</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Created By</th>
-                <th className="p-3 text-left bg-gray-100 font-bold text-black">Assigned Engineer</th>
-                <th className="p-3 text-center font-bold text-black">Attachment</th>
-                <th className="p-3 text-center bg-gray-100 font-bold text-black">Action</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">S.N.</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Title</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Created At</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Priority</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Status</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Resolved At</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Created By</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Assigned Engineer</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Attachment</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Chat</th>
+                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Action</th>
               </tr>
             </thead>
 
             <tbody>
               {paginatedTickets.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="p-6 text-center text-gray-500">
+                  <td colSpan="11" className="p-6 text-center text-gray-500">
                     No tickets available.
                   </td>
                 </tr>
@@ -204,7 +238,7 @@ function Tickets() {
                           <button
                             type="button"
                             onClick={() => viewAttachment(ticket.attachmentPath)}
-                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition"
+                            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded text-xs font-medium transition cursor-pointer"
                             title="View attachment in browser"
                           >
                             View
@@ -212,7 +246,7 @@ function Tickets() {
                           <button
                             type="button"
                             onClick={() => downloadAttachment(ticket.attachmentPath)}
-                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition"
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-300 px-2.5 py-1 rounded text-xs font-medium transition cursor-pointer"
                             title="Download file"
                           >
                             Download
@@ -222,10 +256,44 @@ function Tickets() {
                         <span className="text-gray-400 text-xs italic">—</span>
                       )}
                     </td>
+
+                    {/* Chat Coordination Column with Unread Indicator Badge */}
+                    <td className="p-3 text-center">
+                      {ticket.status === "RESOLVED" ? (
+                        <span className="text-[11px] text-gray-400 italic font-semibold">
+                          Purged
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenChat(ticket)}
+                          className="relative inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-[#9B1317] border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer"
+                          title="Join Ticket Discussion"
+                        >
+                          {unreadSet.has(ticket.id) && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                            </span>
+                          )}
+
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                            />
+                          </svg>
+                          <span>Discuss</span>
+                        </button>
+                      )}
+                    </td>
+
                     <td className="p-3 text-center">
                       <button
                         onClick={() => handleDelete(ticket.id)}
-                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-800 transition"
+                        className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-800 transition cursor-pointer"
                       >
                         Delete
                       </button>
@@ -247,7 +315,7 @@ function Tickets() {
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded px-2 py-1 bg-white"
+              className="border border-gray-300 rounded px-2 py-1 bg-white cursor-pointer"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -264,7 +332,7 @@ function Tickets() {
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Previous
             </button>
@@ -274,13 +342,21 @@ function Tickets() {
             <button
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Next
             </button>
           </div>
         </div>
       </div>
+
+      {/* Coordination Chat Modal Mounted Here */}
+      {chatTicket && (
+        <TicketChatModal
+          ticket={chatTicket}
+          onClose={() => setChatTicket(null)}
+        />
+      )}
     </AdminLayout>
   );
 }

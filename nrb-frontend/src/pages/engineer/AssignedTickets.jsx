@@ -25,6 +25,7 @@ function AssignedTickets() {
   const [chatTicket, setChatTicket] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [unreadSet, setUnreadSet] = useState(new Set());
 
   useEffect(() => {
     loadTickets();
@@ -40,6 +41,30 @@ function AssignedTickets() {
     };
   }, []);
 
+  // Listen to live chat message topics for all loaded tickets to trigger unread indicators
+  useEffect(() => {
+    if (tickets.length === 0) return;
+
+    wsService.connect(() => {
+      tickets.forEach((ticket) => {
+        if (ticket.status !== "RESOLVED") {
+          wsService.subscribe(`/topic/ticket-messages/${ticket.id}`, () => {
+            // If the chat modal for this ticket is NOT currently open, mark as unread
+            if (chatTicket?.id !== ticket.id) {
+              setUnreadSet((prev) => new Set(prev).add(ticket.id));
+            }
+          });
+        }
+      });
+    });
+
+    return () => {
+      tickets.forEach((ticket) => {
+        wsService.unsubscribe(`/topic/ticket-messages/${ticket.id}`);
+      });
+    };
+  }, [tickets, chatTicket]);
+
   const loadTickets = async () => {
     try {
       const response = await getEngineerTickets();
@@ -47,6 +72,16 @@ function AssignedTickets() {
     } catch (error) {
       console.error("Failed to load engineer tickets:", error);
     }
+  };
+
+  const handleOpenChat = (ticket) => {
+    setChatTicket(ticket);
+    // Clear unread badge when opening chat
+    setUnreadSet((prev) => {
+      const next = new Set(prev);
+      next.delete(ticket.id);
+      return next;
+    });
   };
 
   const handleStatusChange = async (id, status) => {
@@ -188,7 +223,7 @@ function AssignedTickets() {
                       )}
                     </td>
 
-                    {/* Chat Column */}
+                    {/* Chat Column with Unread Indicator Badge */}
                     <td className="p-3 text-center">
                       {ticket.status === "RESOLVED" ? (
                         <span className="text-[11px] text-gray-400 italic font-semibold">
@@ -197,10 +232,17 @@ function AssignedTickets() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setChatTicket(ticket)}
-                          className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-[#9B1317] border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer"
+                          onClick={() => handleOpenChat(ticket)}
+                          className="relative inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-[#9B1317] border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer"
                           title="Discuss with User"
                         >
+                          {unreadSet.has(ticket.id) && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                            </span>
+                          )}
+
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               strokeWidth="2"
