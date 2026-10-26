@@ -3,6 +3,7 @@ import {
   FaUsers,
   FaUserCog,
   FaTicketAlt,
+  FaFileExcel,
   FaUser,
   FaSignOutAlt,
 } from "react-icons/fa";
@@ -36,6 +37,11 @@ function Sidebar() {
       path: "/admin/engineers",
       name: "ENGINEERS",
       icon: <FaUserCog className="text-sm" />,
+    },
+    {
+      path: "/admin/reports",
+      name: "REPORTS",
+      icon: <FaFileExcel className="text-sm" />,
     },
     {
       path: "/admin/adminprofile",
@@ -99,7 +105,7 @@ function Sidebar() {
       <div className="p-4 border-t border-red-900/40">
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-2 bg-[#800f13] hover:bg-black/20 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition"
+          className="w-full flex items-center justify-center gap-2 bg-[#800f13] hover:bg-black/20 border border-white/10 text-white text-xs font-bold py-2.5 rounded-lg transition cursor-pointer"
         >
           <FaSignOutAlt />
           <span>LOG OUT</span>

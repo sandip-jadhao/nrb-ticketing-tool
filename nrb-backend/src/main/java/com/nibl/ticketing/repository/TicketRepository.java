@@ -4,6 +4,7 @@ package com.nibl.ticketing.repository;
 import com.nibl.ticketing.entity.Ticket;
 import com.nibl.ticketing.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TicketRepository
@@ -16,4 +17,5 @@ public interface TicketRepository
         long countByCreatedByIdAndStatusIn(Long userId, List<TicketStatus> statuses);
         long countByStatusIn(List<TicketStatus> statuses);
         List<Ticket> findByAssignedEngineerId(Long engineerId);
+        List<Ticket> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
     }

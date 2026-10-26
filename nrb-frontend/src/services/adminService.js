@@ -12,6 +12,10 @@ export const getDashboardData = async () => {
   return response.data;
 };
 
+export const getEngineers = async () => {
+  return await axios.get(`${API}/engineers`, getAuthHeaders());
+};
+
 export const getProfile = async () => {
   const response = await axios.get(`${API}/profile`,getHeaders());
  return response.data;

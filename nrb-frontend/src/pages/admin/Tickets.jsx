@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import AdminLayout from "../../layouts/AdminLayout";
 import { getTickets, deleteTicket } from "../../services/adminService";
 import { wsService } from "../../services/websocketService";
@@ -22,6 +23,9 @@ const PRIORITY_WEIGHTS = {
 };
 
 function Tickets() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusFilter = searchParams.get("filter") || "ALL"; // ALL | OPEN | RESOLVED
+
   const [tickets, setTickets] = useState([]);
   const [chatTicket, setChatTicket] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,7 +75,6 @@ function Tickets() {
     };
   }, []);
 
-  // Listen to live chat message topics for all loaded tickets to trigger unread indicators
   useEffect(() => {
     if (tickets.length === 0) return;
 
@@ -79,7 +82,6 @@ function Tickets() {
       tickets.forEach((ticket) => {
         if (ticket.status !== "RESOLVED") {
           wsService.subscribe(`/topic/ticket-messages/${ticket.id}`, () => {
-            // If the chat modal for this ticket is NOT currently open, mark as unread
             if (chatTicket?.id !== ticket.id) {
               setUnreadSet((prev) => new Set(prev).add(ticket.id));
             }
@@ -95,9 +97,12 @@ function Tickets() {
     };
   }, [tickets, chatTicket]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
+
   const handleOpenChat = (ticket) => {
     setChatTicket(ticket);
-    // Clear unread badge when opening chat
     setUnreadSet((prev) => {
       const next = new Set(prev);
       next.delete(ticket.id);
@@ -115,7 +120,17 @@ function Tickets() {
   };
 
   const sortedTickets = useMemo(() => {
-    return [...tickets].sort((a, b) => {
+    const filtered = tickets.filter((ticket) => {
+      if (statusFilter === "OPEN") {
+        return ticket.status !== "RESOLVED" && ticket.status !== "REJECTED";
+      }
+      if (statusFilter === "RESOLVED") {
+        return ticket.status === "RESOLVED";
+      }
+      return true;
+    });
+
+    return filtered.sort((a, b) => {
       const statusA = STATUS_WEIGHTS[a.status] ?? 0;
       const statusB = STATUS_WEIGHTS[b.status] ?? 0;
       if (statusA !== statusB) {
@@ -132,7 +147,7 @@ function Tickets() {
       const timeB = b.createdAt ? Date.parse(b.createdAt) : 0;
       return timeB - timeA;
     });
-  }, [tickets]);
+  }, [tickets, statusFilter]);
 
   const totalPages = Math.ceil(sortedTickets.length / pageSize) || 1;
   const paginatedTickets = useMemo(() => {
@@ -140,32 +155,86 @@ function Tickets() {
     return sortedTickets.slice(startIndex, startIndex + pageSize);
   }, [sortedTickets, currentPage, pageSize]);
 
+  const handleFilterChange = (newFilter) => {
+    if (newFilter === "ALL") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ filter: newFilter });
+    }
+  };
+
   return (
     <AdminLayout>
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold text-gray-800">Tickets</h1>
+        <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-gray-800">
+              {statusFilter === "OPEN"
+                ? "Open Tickets"
+                : statusFilter === "RESOLVED"
+                ? "Resolved Tickets"
+                : "All Tickets"}
+            </h1>
+
+            {/* Filter Pills */}
+            <div className="flex items-center bg-gray-200/80 p-1 rounded-lg text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => handleFilterChange("ALL")}
+                className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                  statusFilter === "ALL"
+                    ? "bg-[#9B1317] text-white shadow-xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFilterChange("OPEN")}
+                className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                  statusFilter === "OPEN"
+                    ? "bg-[#9B1317] text-white shadow-xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Open
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFilterChange("RESOLVED")}
+                className={`px-3 py-1 rounded-md transition cursor-pointer ${
+                  statusFilter === "RESOLVED"
+                    ? "bg-[#9B1317] text-white shadow-xs"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Resolved
+              </button>
+            </div>
+          </div>
+
           <span className="text-sm text-gray-500 font-medium">
-            Total Tickets: {tickets.length.toLocaleString()}
+            Showing Tickets: {sortedTickets.length.toLocaleString()}
           </span>
         </div>
 
-        {/* Scrollable Container with Sticky Table Header */}
+        {/* Tickets Table */}
         <div className="w-full bg-white rounded-lg shadow overflow-y-auto max-h-[calc(100vh-200px)] border border-gray-200">
           <table className="w-full table-auto border-collapse">
             <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">S.N.</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Title</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Created At</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Priority</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Status</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Resolved At</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Created By</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Assigned Engineer</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Attachment</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Chat</th>
-                <th className="p-3.5 text-xs font-bold uppercase tracking-wider text-gray-600">Action</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">S.N.</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Title</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Created At</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Priority</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Status</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Resolved At</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Created By</th>
+                <th className="p-3.5 text-left text-xs font-bold uppercase tracking-wider text-gray-600">Assigned Engineer</th>
+                <th className="p-3.5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Attachment</th>
+                <th className="p-3.5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Chat</th>
+                <th className="p-3.5 text-center text-xs font-bold uppercase tracking-wider text-gray-600">Action</th>
               </tr>
             </thead>
 
@@ -257,7 +326,6 @@ function Tickets() {
                       )}
                     </td>
 
-                    {/* Chat Coordination Column with Unread Indicator Badge */}
                     <td className="p-3 text-center">
                       {ticket.status === "RESOLVED" ? (
                         <span className="text-[11px] text-gray-400 italic font-semibold">
@@ -350,7 +418,6 @@ function Tickets() {
         </div>
       </div>
 
-      {/* Coordination Chat Modal Mounted Here */}
       {chatTicket && (
         <TicketChatModal
           ticket={chatTicket}

@@ -6,6 +6,7 @@ import Users from "./pages/admin/Users";
 import Engineers from "./pages/admin/Engineers";
 import Tickets from "./pages/admin/Tickets";
 import AdminProfile from "./pages/admin/AdminProfile";
+import Reports from "./pages/admin/Reports";
 
 import EngineerDashboard from "./pages/engineer/EngineerDashboard";
 import AssignedTickets from "./pages/engineer/AssignedTickets";
@@ -27,6 +28,7 @@ function App() {
         <Route path="/admin/users" element={<Users />} />
         <Route path="/admin/engineers" element={<Engineers />} />
         <Route path="/admin/tickets" element={<Tickets />} />
+        <Route path="/admin/reports" element={<Reports />} />
         <Route path="/engineer/dashboard" element={<EngineerDashboard />} />
         <Route path="/admin/AdminProfile" element={<AdminProfile/>}/>
 
